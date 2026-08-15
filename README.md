@@ -177,6 +177,7 @@ python -m pytest tests/ -q                    # pytest.ini sets pythonpath = src
 - [x] Deployed to GitHub Pages: **https://vasimc.github.io/flood_watch_2026/** (auto-redeploys on push via `.github/workflows/pages.yml`)
 - [x] All 4 sources on real, consistent bronze/silver/gold (medallion architecture applied uniformly, not shortcut per-source)
 - [x] District-level flood-extent map — real geoBoundaries district polygons, per-district SAR classification, rendered as an actual choropleth map on the site
+- [x] Optional real-basemap toggle (MapLibre GL JS + self-hosted Protomaps PMTiles) — verified working on live GitHub Pages in both Chromium and Firefox
 
 ## Data licensing & attribution
 

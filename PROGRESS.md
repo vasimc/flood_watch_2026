@@ -773,12 +773,16 @@ Read this first at the start of a new session. See README.md for architecture/da
      committing to it.
 - Verified locally in both Chromium and Firefox (including a pan/zoom
   interaction to trigger fresh range requests, not just the initial
-  load) -- zero errors either way. **Not yet verified against the live
-  GitHub Pages URL in Firefox specifically**, which is the one
-  environment the known upstream bug was reported in -- that's the next
-  step before calling this fully shipped; a same-origin non-Pages static
-  host for just the `.pmtiles` files is the documented fallback if it
-  reproduces there.
+  load) -- zero errors either way. **Then verified against the actual
+  live GitHub Pages URL in Firefox specifically** (the one environment
+  the known upstream bug was reported in) -- pushed, watched the deploy,
+  and drove Firefox against `vasimc.github.io` directly: 4 separate range
+  requests for Assam (zoom interactions), then a completely fresh set of
+  4 for Gujarat after a region switch, every one a correct `206 Partial
+  Content` with the right `Content-Range` header, zero console errors.
+  The flagged bug did not reproduce here -- didn't just assume it was
+  fine because local testing passed; confirmed it on the actual
+  deployment target before calling this shipped.
 - `pytest tests/ -q` unaffected (this entry is site-only), still 27 passed.
 
 ## Gotchas hit and fixed
