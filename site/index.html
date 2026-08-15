@@ -943,7 +943,10 @@
       each district's real administrative boundary (not a bounding box) to
       clip the same Sentinel-1 change-detection method &mdash; run
       separately per district, since satellite pass availability can differ
-      district to district within the same region.
+      district to district within the same region. The full state outline
+      is shown for context, so it's clear where these districts actually
+      sit &mdash; upper Assam near the Nagaland border, coastal South
+      Gujarat &mdash; not just the cluster in isolation.
     </p>
     <p class="section-note" style="margin: -18px 0 26px;">
       District boundaries: <a href="https://www.geoboundaries.org/" target="_blank" rel="noopener">geoBoundaries</a>
@@ -1893,11 +1896,14 @@
     return totalArea === 0 ? null : [wx / totalArea, wy / totalArea];
   }
 
-  function buildDistrictMap(region, boundaries, extentByDistrict) {
+  function buildDistrictMap(region, boundaries, stateBoundaries, extentByDistrict) {
     const W = 380, H = 340, padding = 18;
     const features = boundaries.features.filter(f => f.properties.region === region);
     if (!features.length) return;
-    const toXY = buildProjection(features, W, H, padding);
+    const stateFeature = stateBoundaries.features.find(f => f.properties.region === region);
+    // project against the full state extent (not just the tracked district
+    // cluster) so the reader sees where those districts actually sit
+    const toXY = buildProjection(stateFeature ? [stateFeature] : features, W, H, padding);
 
     const values = extentByDistrict.filter(d => d.region === region);
     const byDistrict = Object.fromEntries(values.map(d => [d.district, d]));
@@ -1909,6 +1915,13 @@
 
     const svg = document.getElementById(`map-${region}`);
     let shapesHtml = "", labelsHtml = "";
+
+    if (stateFeature) {
+      // outline only, no fill -- background context, not a data layer, so
+      // it can't be mistaken for a district with zero flooded area
+      shapesHtml += `<path d="${geometryToPath(stateFeature.geometry, toXY)}" fill="none" stroke="var(--border)" stroke-width="1.2" class="state-outline" />`;
+    }
+
     features.forEach(f => {
       const district = f.properties.district;
       const rec = byDistrict[district];
@@ -1951,10 +1964,11 @@
   }
 
   async function loadSiteData() {
-    const [rainfall, trend, news, newsAttention, floodExtent, districtBoundaries, floodExtentByDistrict] = await Promise.all(
+    const [rainfall, trend, news, newsAttention, floodExtent, districtBoundaries, stateBoundaries, floodExtentByDistrict] = await Promise.all(
       [
         "data/rainfall.json", "data/trend.json", "data/news.json", "data/news_attention.json",
-        "data/flood_extent.json", "data/district_boundaries.json", "data/flood_extent_by_district.json",
+        "data/flood_extent.json", "data/district_boundaries.json", "data/state_boundaries.json",
+        "data/flood_extent_by_district.json",
       ].map(
         url => fetch(url).then(r => {
           if (!r.ok) throw new Error(`${url}: HTTP ${r.status}`);
@@ -1980,8 +1994,8 @@
 
     applyFloodExtent(floodExtent);
 
-    buildDistrictMap("assam", districtBoundaries, floodExtentByDistrict);
-    buildDistrictMap("gujarat", districtBoundaries, floodExtentByDistrict);
+    buildDistrictMap("assam", districtBoundaries, stateBoundaries, floodExtentByDistrict);
+    buildDistrictMap("gujarat", districtBoundaries, stateBoundaries, floodExtentByDistrict);
   }
 
   loadSiteData().catch(err => {

@@ -662,6 +662,38 @@ Read this first at the start of a new session. See README.md for architecture/da
   status checklist, and the site's own roadmap footer + licensing
   paragraph. Verified in a real browser, light and dark, before shipping.
 
+## 2026-08-15 — Session entry (district labels + full state map context)
+
+- User asked for district names on the map (quick win, chosen over the
+  other options offered: % of district flooded, scale bar, river
+  overlays) — added `geometryCentroid()` (shoelace-formula area-weighted
+  centroid, MultiPolygon-aware so Surat's label lands in its main
+  landmass not a stray fragment) and rendered each district's name with a
+  halo (`paint-order: stroke fill`) so it stays legible across the full
+  choropleth color range in both themes.
+- Then asked to show the full state, not just the tracked district
+  cluster. Added `fetch_state_boundaries()` to `ingest_district_boundaries.py`
+  (geoBoundaries ADM1, same GEE catalog family as the district layer).
+  **Hit a real upstream data-quality bug**: Gujarat's ADM1 `shapeName` is
+  literally `"Gujar?t"` in this dataset (a raw '?' byte where a diacritic
+  should be, confirmed by checking the character's actual codepoint --
+  0x3f, not a terminal-rendering artifact). Matched by substring instead
+  of exact name to sidestep it, which is also more robust generally.
+  Used a coarser simplify tolerance (1000m vs. 100m) for state outlines
+  specifically, since they're background context, not analysis precision
+  -- cut Gujarat's point count from 9,142 to 1,794 with no visible loss
+  at map scale.
+- State outline renders as a stroke-only shape (no fill) so it can't be
+  confused with a real district's near-zero choropleth color, and the
+  map's projection now fits the full state extent instead of just the
+  district cluster, so the reader sees where the tracked districts
+  actually sit (upper Assam near the Nagaland border; coastal South
+  Gujarat).
+- `pytest tests/ -q` unaffected (JS-only change plus one Python function
+  covered by the existing `_clean_geometry` tests), still 27 passed.
+  Verified in a real browser, both themes, hover interaction still works
+  correctly with the new background layer present.
+
 ## Gotchas hit and fixed
 
 - The rainfall download pages (`Rainfall_25_NetCDF.html`, `Rain_Download.html`)

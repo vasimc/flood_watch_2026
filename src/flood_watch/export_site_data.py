@@ -116,6 +116,13 @@ def export_district_boundaries() -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def export_state_boundaries() -> dict:
+    """Pass-through of the state-level reference geometries -- background
+    context for the district map, same licensing note as district_boundaries."""
+    path = DATA_DIR / "reference" / "state_boundaries.geojson"
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
 def export_flood_extent_by_district() -> list:
     df = pd.read_parquet(DATA_DIR / "gold" / "flood_extent" / "flood_extent_by_district.parquet")
     return [
@@ -159,6 +166,7 @@ def export_all() -> None:
         "flood_extent.json": export_flood_extent(),
         "flood_extent_by_district.json": export_flood_extent_by_district(),
         "district_boundaries.json": export_district_boundaries(),
+        "state_boundaries.json": export_state_boundaries(),
         "impact.json": export_impact(),
     }
     for filename, payload in exports.items():
