@@ -608,6 +608,19 @@
   .district-shape { cursor: pointer; transition: opacity 0.1s ease; }
   .district-shape:hover { opacity: 0.85; }
 
+  .district-label {
+    font-family: var(--sans);
+    font-size: 9.5px;
+    font-weight: 600;
+    fill: var(--ink);
+    text-anchor: middle;
+    pointer-events: none;
+    paint-order: stroke fill;
+    stroke: var(--surface);
+    stroke-width: 3px;
+    stroke-linejoin: round;
+  }
+
   .map-legend {
     display: flex;
     align-items: center;
@@ -1851,6 +1864,35 @@
     return polys.map(poly => poly.map(ring => ringToPath(ring, toXY)).join(" ")).join(" ");
   }
 
+  function ringCentroid(ring) {
+    // Shoelace-formula area-weighted centroid of a simple polygon ring.
+    let area = 0, cx = 0, cy = 0;
+    for (let i = 0; i < ring.length - 1; i++) {
+      const [x0, y0] = ring[i];
+      const [x1, y1] = ring[i + 1];
+      const cross = x0 * y1 - x1 * y0;
+      area += cross;
+      cx += (x0 + x1) * cross;
+      cy += (y0 + y1) * cross;
+    }
+    area /= 2;
+    if (area === 0) return null;
+    return { x: cx / (6 * area), y: cy / (6 * area), area: Math.abs(area) };
+  }
+
+  function geometryCentroid(geometry) {
+    // MultiPolygon (e.g. a district with small offshore/river-island
+    // fragments): weight by each part's area so the label lands in the
+    // largest landmass, not an average pulled toward a tiny fragment.
+    const polys = geometry.type === "MultiPolygon" ? geometry.coordinates : [geometry.coordinates];
+    let totalArea = 0, wx = 0, wy = 0;
+    polys.forEach(poly => {
+      const c = ringCentroid(poly[0]); // exterior ring only
+      if (c) { wx += c.x * c.area; wy += c.y * c.area; totalArea += c.area; }
+    });
+    return totalArea === 0 ? null : [wx / totalArea, wy / totalArea];
+  }
+
   function buildDistrictMap(region, boundaries, extentByDistrict) {
     const W = 380, H = 340, padding = 18;
     const features = boundaries.features.filter(f => f.properties.region === region);
@@ -1866,16 +1908,23 @@
     const highColor = style.getPropertyValue("--alert").trim();
 
     const svg = document.getElementById(`map-${region}`);
-    let html = "";
+    let shapesHtml = "", labelsHtml = "";
     features.forEach(f => {
       const district = f.properties.district;
       const rec = byDistrict[district];
       const t = rec ? Math.min(rec.flooded_area_km2 / maxKm2, 1) : 0;
       const fill = interpolateColor(lowColor, highColor, t);
       const d = geometryToPath(f.geometry, toXY);
-      html += `<path d="${d}" fill="${fill}" stroke="var(--surface)" stroke-width="1.5" class="district-shape" data-district="${district}" />`;
+      shapesHtml += `<path d="${d}" fill="${fill}" stroke="var(--surface)" stroke-width="1.5" class="district-shape" data-district="${district}" />`;
+
+      const centroid = geometryCentroid(f.geometry);
+      if (centroid) {
+        const [lx, ly] = toXY(centroid[0], centroid[1]);
+        labelsHtml += `<text class="district-label" x="${lx.toFixed(1)}" y="${ly.toFixed(1)}">${district}</text>`;
+      }
     });
-    svg.innerHTML = html;
+    // labels drawn after all shapes so no shape can paint over a label
+    svg.innerHTML = shapesHtml + labelsHtml;
 
     document.getElementById(`map-legend-max-${region}`).textContent =
       Math.round(maxKm2).toLocaleString("en-US") + " km²";
