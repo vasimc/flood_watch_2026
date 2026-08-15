@@ -1,0 +1,86 @@
+[
+  {
+    "region": "assam",
+    "district": "Sivasagar",
+    "peak_date": "2026-07-20",
+    "before_window": "2026-06-20_2026-07-05",
+    "after_window": "2026-07-17_2026-07-23",
+    "before_image_count": 8,
+    "after_image_count": 3,
+    "before_window_widened": false,
+    "after_window_widened": false,
+    "flooded_area_km2": 273.29
+  },
+  {
+    "region": "assam",
+    "district": "Charaideo",
+    "peak_date": "2026-07-20",
+    "before_window": "2026-06-20_2026-07-05",
+    "after_window": "2026-07-17_2026-07-23",
+    "before_image_count": 8,
+    "after_image_count": 3,
+    "before_window_widened": false,
+    "after_window_widened": false,
+    "flooded_area_km2": 83.33
+  },
+  {
+    "region": "assam",
+    "district": "Jorhat",
+    "peak_date": "2026-07-20",
+    "before_window": "2026-06-20_2026-07-05",
+    "after_window": "2026-07-17_2026-07-23",
+    "before_image_count": 3,
+    "after_image_count": 2,
+    "before_window_widened": false,
+    "after_window_widened": false,
+    "flooded_area_km2": 120.88
+  },
+  {
+    "region": "assam",
+    "district": "Golaghat",
+    "peak_date": "2026-07-20",
+    "before_window": "2026-06-20_2026-07-05",
+    "after_window": "2026-07-17_2026-07-23",
+    "before_image_count": 6,
+    "after_image_count": 4,
+    "before_window_widened": false,
+    "after_window_widened": false,
+    "flooded_area_km2": 245.03
+  },
+  {
+    "region": "gujarat",
+    "district": "Valsad",
+    "peak_date": "2026-07-24",
+    "before_window": "2026-06-24_2026-07-09",
+    "after_window": "2026-07-21_2026-08-03",
+    "before_image_count": 3,
+    "after_image_count": 1,
+    "before_window_widened": false,
+    "after_window_widened": true,
+    "flooded_area_km2": 44.23
+  },
+  {
+    "region": "gujarat",
+    "district": "Navsari",
+    "peak_date": "2026-07-24",
+    "before_window": "2026-06-24_2026-07-09",
+    "after_window": "2026-07-21_2026-08-03",
+    "before_image_count": 3,
+    "after_image_count": 2,
+    "before_window_widened": false,
+    "after_window_widened": true,
+    "flooded_area_km2": 41.48
+  },
+  {
+    "region": "gujarat",
+    "district": "Surat",
+    "peak_date": "2026-07-24",
+    "before_window": "2026-06-24_2026-07-09",
+    "after_window": "2026-07-21_2026-08-03",
+    "before_image_count": 2,
+    "after_image_count": 1,
+    "before_window_widened": false,
+    "after_window_widened": true,
+    "flooded_area_km2": 57.9
+  }
+]

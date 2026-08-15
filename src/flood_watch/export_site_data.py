@@ -107,6 +107,34 @@ def export_impact() -> list:
     ]
 
 
+def export_district_boundaries() -> dict:
+    """Pass-through of the district reference geometries -- see
+    ingest_district_boundaries.py's module docstring for why republishing
+    this file carries its own ODbL attribution (not just the derived
+    statistics)."""
+    path = DATA_DIR / "reference" / "district_boundaries.geojson"
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def export_flood_extent_by_district() -> list:
+    df = pd.read_parquet(DATA_DIR / "gold" / "flood_extent" / "flood_extent_by_district.parquet")
+    return [
+        {
+            "region": row.region,
+            "district": row.district,
+            "peak_date": row.peak_date,
+            "before_window": row.before_window,
+            "after_window": row.after_window,
+            "before_image_count": int(row.before_image_count),
+            "after_image_count": int(row.after_image_count),
+            "before_window_widened": bool(row.before_window_widened),
+            "after_window_widened": bool(row.after_window_widened),
+            "flooded_area_km2": round(float(row.flooded_area_km2), 2),
+        }
+        for row in df.itertuples()
+    ]
+
+
 def export_news_attention() -> list:
     df = pd.read_parquet(DATA_DIR / "gold" / "news_attention.parquet")
     return [
@@ -129,6 +157,8 @@ def export_all() -> None:
         "news.json": export_news(),
         "news_attention.json": export_news_attention(),
         "flood_extent.json": export_flood_extent(),
+        "flood_extent_by_district.json": export_flood_extent_by_district(),
+        "district_boundaries.json": export_district_boundaries(),
         "impact.json": export_impact(),
     }
     for filename, payload in exports.items():

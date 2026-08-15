@@ -26,6 +26,7 @@ presents it as accessible infographics rather than another dashboard.
 | [IMD Pune gridded rainfall — yearly archive](https://www.imdpune.gov.in/cmpg/Griddata/Rainfall_25_NetCDF.html) | 0.25°×0.25° daily rainfall, NetCDF, one file per year (years up to 2025 as of 2026-08-14) | free, no registration (verified POST endpoint) | A — automated ingestion, historical-normal baseline |
 | [IMD Pune gridded rainfall — realtime daily](https://www.imdpune.gov.in/cmpg/Realtimedata/Rainfall/Rain_Download.html) | 0.25°×0.25° single-day rainfall, raw binary grid, **includes current 2026 dates** | free, no registration (verified POST endpoint) | A — automated ingestion, actual event-date rainfall |
 | [GDELT](https://www.gdeltproject.org/) | daily news-article-volume timeline per query (DOC 2.0 API) | free, no auth; strict rate limit in practice (~30s between requests) | A — automated ingestion, attribution required by GDELT's own terms |
+| [geoBoundaries](https://www.geoboundaries.org/) (India ADM2, via GEE) | real district administrative boundaries for 7 worst-hit districts | free via GEE catalog (`WM/geoLab/geoBoundaries/600/ADM2`), no download needed | reference/dimension data — not a fact source, ODbL 1.0 (see licensing below) |
 | [ReliefWeb](https://reliefweb.int/) / ASDMA / Gujarat SEOC sitreps | deaths, relief camps, crop damage, embankment breach reports | manual PDF/HTML | B — structured extraction |
 
 **Honest data-pipeline note:** rainfall, GDELT, and satellite flood-extent are
@@ -64,7 +65,8 @@ Column glossary (gold layer, added as tables land):
 |---|---|---|
 | `gold.rainfall_anomaly_timeline` | `pct_departure` | % actual rainfall vs. historical normal for that district/date |
 | `gold.historical_frequency` | `extreme_day_count` | monsoon days/year exceeding 2x the 26-year monsoon-day mean, per region |
-| `gold.flood_extent_gee` | `flooded_area_km2` | flooded area from Sentinel-1 SAR before/after ratio change detection |
+| `gold.flood_extent_gee` | `flooded_area_km2` | flooded area from Sentinel-1 SAR before/after ratio change detection, region-level bbox |
+| `gold.flood_extent_by_district` | `flooded_area_km2` | same method, per real district polygon — deliberately not reconciled with the region-level number, see README/site caveat |
 | `gold.news_attention` | `lag_days` | days between peak news coverage and the independently-computed rainfall peak (negative = anticipatory) |
 | `gold.impact_summary` | `source_url` | citation for every impact/causation figure (Tier B); `is_estimate` flags floor/approximation figures (e.g. "over 3 lakh") vs. exact counts |
 
@@ -84,7 +86,8 @@ SOURCE                BRONZE (raw)        SILVER (one real transform)      GOLD 
 IMD Pune (rainfall) -> rainfall_imd    -> daily_mean + monthly normal   -> rainfall_anomaly_timeline
                                                                             historical_frequency
 Sentinel-1 (GEE)    -> satellite_gee   -> pixel classification         -> flood_extent_gee
-                        (raw passes)      (SAR ratio > 1.25)
+                        (raw passes)      (SAR ratio > 1.25)              flood_extent_by_district
+                        region + per-district, same method clipped to real geoBoundaries polygons
 GDELT                -> gdelt_news      -> 3-day rolling average        -> news_attention
                                                                             (peak-day / lag vs. rainfall)
 News + Wikipedia     -> impact_reports -> typed + is_estimate flag     -> impact_summary
@@ -92,8 +95,8 @@ News + Wikipedia     -> impact_reports -> typed + is_estimate flag     -> impact
 ```
 
 Every gold table above is produced by a real, re-runnable script (`gold_rainfall.py`,
-`ingest_satellite_gee.py`, `gold_gdelt.py`, `extract_impact.py`) -- not
-interactive one-off code. All four converge into `export_site_data.py`,
+`ingest_satellite_gee.py` / `ingest_flood_extent_district.py`, `gold_gdelt.py`,
+`extract_impact.py`) -- not interactive one-off code. All outputs converge into `export_site_data.py`,
 which writes `site/data/*.json`, which the static site fetches at runtime:
 
 ```
@@ -115,6 +118,7 @@ flood_watch_2026/
     export_site_data.py       reads gold Parquet, writes site/data/*.json
   notebooks/                  thin scripts that call src/ functions for interactive checks
   data/                       bronze/silver/gold Parquet + raw downloads (gitignored, /data/ only)
+    reference/                 static reference geometry (district boundaries), not a fact table
   tests/                      pytest unit tests for transform logic
   site/
     index.html                the durable site (GitHub Pages) -- reads site/data/*.json at runtime
@@ -168,6 +172,8 @@ python -m pytest tests/ -q                    # pytest.ini sets pythonpath = src
 - [x] Durable `site/index.html` reading `site/data/*.json`, verified with a real headless browser both locally and live
 - [x] GitHub repo created + pushed: https://github.com/vasimc/flood_watch_2026
 - [x] Deployed to GitHub Pages: **https://vasimc.github.io/flood_watch_2026/** (auto-redeploys on push via `.github/workflows/pages.yml`)
+- [x] All 4 sources on real, consistent bronze/silver/gold (medallion architecture applied uniformly, not shortcut per-source)
+- [x] District-level flood-extent map — real geoBoundaries district polygons, per-district SAR classification, rendered as an actual choropleth map on the site
 
 ## Data licensing & attribution
 
@@ -181,7 +187,8 @@ statistics with attribution), with one adjustment already made.
 | Google Earth Engine (platform ToS, separate from the Sentinel-1 data license) | safe — ToS explicitly permits using "data, diagrams, charts, figures created by use of the Services in research or educational publications" | non-commercial use only (this project qualifies; commercial use needs separate GEE enrollment) |
 | NASA LANCE / LAADS (MCDWD) | no reuse restrictions — NASA data is effectively public domain | attribution requested, not required: *"We acknowledge the use of data and/or imagery from NASA's Land, Atmosphere Near real-time Capability for Earth observations (LANCE)..."* |
 | IMD Pune gridded rainfall | safe for derived statistics; site-wide disclaimer restricts reproducing raw content without permission | cite Pai et al. (2014), MAUSAM 65(1), pp1–18; don't publicly host/link the raw NetCDF/binary files (they stay in gitignored `data/`) |
-| GDELT (planned, not yet ingested) | fully open — "unlimited and unrestricted use for any academic, commercial, or governmental use," redistribution of derived data explicitly permitted | attribution **is mandatory**: cite the GDELT Project + link to gdeltproject.org wherever this data or anything derived from it is used |
+| GDELT | fully open — "unlimited and unrestricted use for any academic, commercial, or governmental use," redistribution of derived data explicitly permitted | attribution **is mandatory**: cite the GDELT Project + link to gdeltproject.org wherever this data or anything derived from it is used |
+| geoBoundaries (India ADM2 district boundaries) | ODbL 1.0 — checked the actual license text (not the marketing page's "CC BY 4.0" headline claim), which is stricter for this specific dataset | derived *statistics* (flooded_area_km2 per district) only need simple attribution (ODbL §4.3); republishing the boundary *geometries themselves*, as this site does for the map, counts as extracting a substantial part of the source and requires the ODbL notice alongside that specific data (§4.2/4.4) — both included on the site and in `ingest_district_boundaries.py` |
 | Wikipedia | facts are freely reusable even without attribution; our citations link back anyway | none beyond the existing link |
 | News outlets (The Week, Down To Earth, ThePrint, ANI News, Nativeplanet) | citing bare facts (death tolls, figures) with an attributed link is standard, low-risk practice in both US and Indian copyright law (facts aren't copyrightable; short attributed use for reporting/commentary falls within fair use / India's Section 52(1)(a) fair dealing) | attribute + link (already the site's practice) |
 
@@ -192,4 +199,7 @@ original short attributed quote was almost certainly fine under fair dealing.
 
 **Not published anywhere in this repo or the site:** raw downloaded files
 (NetCDF, GeoTIFF, binary grids, PDFs) — `data/` is gitignored end-to-end.
-Only derived statistics and cited facts are shown publicly.
+What is shown publicly is either derived statistics, cited facts, or (for
+the district boundaries specifically) the real reference geometry itself,
+published deliberately and with the license it actually requires (see the
+geoBoundaries/ODbL row above), not by accident.

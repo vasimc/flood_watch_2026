@@ -14,11 +14,12 @@ Read this first at the start of a new session. See README.md for architecture/da
 - [x] Historical trend analysis — 2000-2025, monsoon rainfall extremity
 - [x] GDELT attention timeline — run live for both regions
 - [x] Sentinel-1 (GEE) satellite flood-extent — run live 2026-08-15, see below
-- [ ] Website v1 deployed to GitHub Pages (prototype is live as a Claude Artifact, not yet the durable site)
 - [x] Narrative/preparedness section — warning systems, cited 2026-response lessons, NDMA guidance
 - [x] Durable `site/index.html` reading `site/data/*.json` (built + verified in a real browser)
 - [x] GitHub repo created + pushed: https://github.com/vasimc/flood_watch_2026
 - [x] Deployed to GitHub Pages: https://vasimc.github.io/flood_watch_2026/
+- [x] All 4 sources on real, consistent bronze/silver/gold (not shortcut per-source)
+- [x] District-level flood-extent map — real geoBoundaries polygons, per-district SAR, actual choropleth map
 
 ## 2026-08-14 — Session entry (skeleton + satellite scaffold)
 
@@ -578,6 +579,89 @@ Read this first at the start of a new session. See README.md for architecture/da
   database layer. `pytest tests/ -q` still 23 passed (nothing imported the
   removed symbols).
 
+## 2026-08-15 — Session entry (district-level flood-extent map, real district polygons)
+
+- User pointed at the site's own "District-level flood-extent map" roadmap
+  item, still pending. Before building anything, researched real district
+  boundary sources rather than assuming one existed or reaching for a
+  hand-drawn approximation -- delegated to a research agent covering
+  geoBoundaries, datameet/maps, GADM, Natural Earth, HDX, Bhuvan, and two
+  Earth Engine-native options (geoBoundaries' own EE asset, FAO GAUL).
+  **Verified the winning candidate myself** rather than trusting the
+  research report at face value: queried `WM/geoLab/geoBoundaries/600/ADM2`
+  live against my own GEE session, confirmed all 7 target districts present
+  by exact name (including Charaideo, Assam's newest district, created
+  2015 -- a good staleness check), and cross-checked Charaideo's computed
+  area (1,051 km²) against its known real area as a sanity check.
+- Asked the user directly whether "map" should mean a real geographic
+  choropleth (new projection/rendering code) or a simpler bar-chart
+  re-skin of the existing chart style -- chose real geography, since a
+  genuine small map is a stronger portfolio piece than another bar chart
+  wearing a "map" label.
+- **Licensing, checked properly, not assumed:** geoBoundaries markets
+  itself as "CC BY 4.0" but the actual API metadata for this specific
+  India ADM2 boundary states ODbL 1.0 -- fetched and read the real ODbL
+  license text before deciding how to comply, rather than trusting the
+  marketing page. Distinction that mattered: derived *statistics*
+  (flooded_area_km2 per district) only need simple attribution (§4.3);
+  republishing the boundary *geometries themselves* (which the map does)
+  counts as extracting a substantial part of the source database and
+  triggers §4.2/4.4 -- so the geometry file and the site both carry their
+  own ODbL notice, stricter than every other source's simple-attribution
+  requirement in this project.
+- Added `ingest_district_boundaries.py`: fetches the 7 districts' real
+  polygons directly from the GEE catalog (no ~48MB national file download
+  needed), simplifies server-side, writes `data/reference/district_boundaries.geojson`.
+  Treated explicitly as reference/dimension data, not a medallion fact
+  table -- same category as `geo_reference.py`'s existing hand-typed
+  bboxes, just sourced from a real dataset instead of typed in.
+  **Hit and fixed a real geometry bug**: Surat's simplified geometry came
+  back as a `GeometryCollection` padded with degenerate 2-point
+  `LineString` slivers alongside the real polygons (a `.simplify()`
+  artifact on complex coastal district shapes) -- wrote `_clean_geometry()`
+  to filter to real polygons and collapse to Polygon/MultiPolygon, with 4
+  tests covering the plain-polygon, artifact-stripping, multi-polygon-merge,
+  and all-artifacts-no-polygon-survives cases.
+- Refactored `resolve_windows()` in `ingest_satellite_gee.py` to take
+  geometry as an explicit parameter instead of deriving it internally from
+  a region name -- a small, safe change that let the existing
+  bronze/silver/gold primitives (`build_bronze_passes`,
+  `build_silver_classification`, `build_gold_summary`) get reused
+  unchanged for district-level ingestion, rather than duplicating the
+  actual GEE computation logic. New `ingest_flood_extent_district.py`
+  does the per-district orchestration on top of those reused primitives.
+  Traced through a labeling bug by hand before running anything live: a
+  naive pop-based rename would have mislabeled the `district` column with
+  the region name instead of the actual district, once
+  `build_gold_summary` propagated the relabeled silver row's `region` key
+  forward. Fixed with explicit values instead of pop-tricks.
+- Ran live: 49 bronze pass rows, 7 silver/gold rows (one per district).
+  **Real, honest finding, not smoothed over**: district-level sums don't
+  match the region-level bbox numbers from the earlier session --
+  Assam's 4 districts sum to 723 km² vs. the regional 2,389 km² (the
+  region bbox captured extra non-district land); Gujarat's 3 districts
+  sum to 144 km² vs. the regional 83 km² (each district resolved its own
+  before/after window independently and landed on different satellite
+  passes than the shared regional window). Both numbers are real; they're
+  measuring different things. Stated explicitly on the site as a caveat,
+  not reconciled or hidden.
+- Built the actual map: hand-authored an equirectangular-ish projection
+  (cosine-latitude corrected for the small area involved) computed live in
+  JS from the real polygon coordinates -- not decorative hand-drawn path
+  data, programmatically generated from real geometry, consistent with
+  the diagramming guidance this project follows elsewhere. Choropleth
+  color scale reads `--surface-2`/`--alert` from the live computed
+  CSS custom properties (not hardcoded hex), so it adapts correctly to
+  light/dark theme automatically. Verified real hover interaction with
+  Playwright's `.hover()` after an initial manual-mouse-position test gave
+  a false negative (bounding-box center landed outside an irregular
+  concave district shape, not an actual bug).
+- 4 new tests (`_clean_geometry`), `pytest tests/ -q` now 27 passed (was
+  23). Updated the architecture diagram's satellite row to show the
+  second gold table, README's dataset/architecture/licensing tables and
+  status checklist, and the site's own roadmap footer + licensing
+  paragraph. Verified in a real browser, light and dark, before shipping.
+
 ## Gotchas hit and fixed
 
 - The rainfall download pages (`Rainfall_25_NetCDF.html`, `Rain_Download.html`)
@@ -615,11 +699,9 @@ https://github.com/vasimc/flood_watch_2026, public).
 What's left is optional follow-on work, not required to call this
 complete:
 
-1. District-level flood-extent map (still marked pending in the site's own
-   roadmap footer).
-2. Re-run `export_site_data.py` + push whenever upstream data changes
+1. Re-run `export_site_data.py` + push whenever upstream data changes
    (e.g. a later, less-recent-event snapshot of the impact figures) — the
    GitHub Actions workflow (`.github/workflows/pages.yml`) redeploys
    automatically on any push that touches `site/**`.
-3. If continuing to track the event, extend rainfall/GDELT windows and
-   re-ingest satellite for a later date range.
+2. If continuing to track the event, extend rainfall/GDELT windows and
+   re-ingest satellite (region and per-district) for a later date range.

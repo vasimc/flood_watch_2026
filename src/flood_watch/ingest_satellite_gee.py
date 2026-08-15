@@ -102,14 +102,16 @@ def _find_nonempty_window(
 
 
 def resolve_windows(
-    region: str, peak_date: date, before_days=(30, 15), after_days=(-3, 3)
+    row_id: str, geometry: "ee.Geometry", peak_date: date, before_days=(30, 15), after_days=(-3, 3)
 ) -> dict:
     """Resolves the before/after date windows (auto-widening as needed) and
     the real Sentinel-1 passes found in each -- the fact-finding step that
-    both the bronze and silver layers below are built from."""
-    min_lon, min_lat, max_lon, max_lat = get_flood_extent_bbox(region)
-    geometry = ee.Geometry.Rectangle([min_lon, min_lat, max_lon, max_lat])
+    both the bronze and silver layers below are built from.
 
+    Takes the geometry directly rather than deriving it from a region name,
+    so this same function serves both region-level (bbox) and district-level
+    (real polygon, see ingest_flood_extent_district.py) ingestion. `row_id`
+    just labels the output row -- a region name or a district name."""
     req_before = (peak_date - timedelta(days=before_days[0]), peak_date - timedelta(days=before_days[1]))
     req_after = (peak_date + timedelta(days=after_days[0]), peak_date + timedelta(days=after_days[1]))
 
@@ -117,7 +119,7 @@ def resolve_windows(
     after_start, after_end, after_dates = _find_nonempty_window(geometry, *req_after, widen_earlier=False)
 
     return {
-        "region": region,
+        "region": row_id,
         "geometry": geometry,
         "before_start": before_start,
         "before_end": before_end,
@@ -206,7 +208,9 @@ def ingest(project_id: str, regions_and_peaks: dict) -> pd.DataFrame:
 
     bronze_frames, silver_rows, gold_rows = [], [], []
     for region, peak in regions_and_peaks.items():
-        resolved = resolve_windows(region, peak)
+        min_lon, min_lat, max_lon, max_lat = get_flood_extent_bbox(region)
+        geometry = ee.Geometry.Rectangle([min_lon, min_lat, max_lon, max_lat])
+        resolved = resolve_windows(region, geometry, peak)
         bronze_frames.append(build_bronze_passes(resolved))
         silver_row = build_silver_classification(resolved)
         silver_rows.append(silver_row)

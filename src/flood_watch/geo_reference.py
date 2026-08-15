@@ -83,3 +83,13 @@ def get_rainfall_peak_date(region: str) -> str:
     windows, GDELT coverage-lag) anchor to, instead of each re-deriving or
     re-hardcoding it."""
     return REGIONS[region]["rainfall_peak_date_2026"]
+
+
+def get_districts(region: str) -> list[str]:
+    return REGIONS[region]["most_affected_districts_2026"]
+
+
+def district_region_map() -> dict[str, str]:
+    """{district_name: region} for every district across all regions --
+    used to label district-level results with their parent region."""
+    return {district: region for region in REGIONS for district in get_districts(region)}

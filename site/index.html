@@ -601,6 +601,31 @@
   .prep-card li { margin-bottom: 7px; }
   .prep-card li b { color: var(--ink); }
 
+  /* ---------- District map ---------- */
+
+  svg.district-map { width: 100%; height: auto; display: block; overflow: visible; }
+
+  .district-shape { cursor: pointer; transition: opacity 0.1s ease; }
+  .district-shape:hover { opacity: 0.85; }
+
+  .map-legend {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--ink-3);
+  }
+
+  .map-legend-bar {
+    flex: 1;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(to right, var(--surface-2), var(--alert));
+    border: 1px solid var(--border);
+  }
+
   /* ---------- Architecture diagram ---------- */
 
   .arch-figure {
@@ -891,6 +916,67 @@
       "flooded = 0"), and flags it: Gujarat's number here is a real
       measurement, but very likely an <em>undercount</em> of the actual peak
       flood extent. Assam's number does not have this caveat.
+    </div>
+  </section>
+
+  <section id="district-map">
+    <div class="section-head">
+      <h2 class="section-title">Flood extent by district</h2>
+      <div class="section-note">real district boundaries &middot; same SAR method, per district</div>
+    </div>
+    <p class="section-intro">
+      The regional numbers above are one before/after comparison across a
+      whole district cluster. This breaks that down per district, using
+      each district's real administrative boundary (not a bounding box) to
+      clip the same Sentinel-1 change-detection method &mdash; run
+      separately per district, since satellite pass availability can differ
+      district to district within the same region.
+    </p>
+    <p class="section-note" style="margin: -18px 0 26px;">
+      District boundaries: <a href="https://www.geoboundaries.org/" target="_blank" rel="noopener">geoBoundaries</a>
+      (India ADM2, via Google Earth Engine), sourced from India's Local Government
+      Directory, licensed <a href="https://opendatacommons.org/licenses/odbl/1-0/" target="_blank" rel="noopener">ODbL 1.0</a>.
+    </p>
+    <div class="trend-grid">
+      <div class="trend-card">
+        <h4>Assam</h4>
+        <div class="chart-wrap" id="map-assam-wrap">
+          <svg class="district-map" id="map-assam" viewBox="0 0 380 340" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="tooltip" id="tooltip-map-assam"></div>
+        </div>
+        <div class="map-legend">
+          <span>0 km&sup2;</span>
+          <div class="map-legend-bar"></div>
+          <span id="map-legend-max-assam">&hellip;</span>
+        </div>
+      </div>
+      <div class="trend-card">
+        <h4>Gujarat</h4>
+        <div class="chart-wrap" id="map-gujarat-wrap">
+          <svg class="district-map" id="map-gujarat" viewBox="0 0 380 340" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="tooltip" id="tooltip-map-gujarat"></div>
+        </div>
+        <div class="map-legend">
+          <span>0 km&sup2;</span>
+          <div class="map-legend-bar"></div>
+          <span id="map-legend-max-gujarat">&hellip;</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="caveat">
+      <b>Honest discrepancy, not smoothed over:</b> summing the 4 Assam
+      districts gives 723 km&sup2; &mdash; nowhere near the regional
+      2,389 km&sup2; figure above, because that regional number used a
+      looser bounding box that also captured surrounding non-district land.
+      Gujarat runs the other way (144 km&sup2; summed vs. 83 km&sup2;
+      regional), because each district resolved its own before/after
+      window independently and happened to land on different satellite
+      passes than the shared regional window did. Neither number is
+      "wrong" &mdash; they're measuring genuinely different things (a loose
+      cluster box vs. real administrative boundaries, one shared window vs.
+      per-district windows), and the gap itself is a useful reminder that
+      "flooded area" depends on exactly what you draw the line around.
     </div>
   </section>
 
@@ -1281,14 +1367,15 @@
 
         <rect class="box" x="172" y="160" width="108" height="50" rx="7" />
         <text class="box-title" x="183" y="185">satellite_gee</text>
-        <text class="box-sub" x="183" y="197">passes (32 rows)</text>
+        <text class="box-sub" x="183" y="197">region + district passes</text>
 
         <rect class="box" x="310" y="160" width="108" height="50" rx="7" />
         <text class="box-title" x="321" y="185">pixel_class.</text>
         <text class="box-sub" x="321" y="197">SAR ratio &gt; 1.25</text>
 
         <rect class="box gold" x="448" y="160" width="130" height="50" rx="7" />
-        <text class="gold-item" x="459" y="189">flood_extent_gee</text>
+        <text class="gold-item" x="459" y="181">flood_extent_gee</text>
+        <text class="gold-item" x="459" y="195">+ by_district</text>
 
         <!-- row 3: GDELT -->
         <rect class="box" x="14" y="250" width="128" height="50" rx="7" />
@@ -1388,7 +1475,7 @@
         <li class="done"><span class="mark">&#10003;</span> Event-window &amp; district correction against real sources (Wikipedia, news reporting)</li>
         <li class="done"><span class="mark">&#10003;</span> Structured, citation-backed impact table (gold.impact_summary, 13 rows)</li>
         <li class="done"><span class="mark">&#10003;</span> Sentinel-1 (Google Earth Engine) flood-extent ingestion &mdash; run live: Assam 2,389 km&sup2;, Gujarat 83 km&sup2; (widened-window caveat, see Flood extent section)</li>
-        <li class="pending"><span class="mark">&#9675;</span> District-level flood-extent map</li>
+        <li class="done"><span class="mark">&#10003;</span> District-level flood-extent map &mdash; real geoBoundaries district polygons, per-district SAR classification</li>
         <li class="done"><span class="mark">&#10003;</span> Multi-year rainfall-extremity trend, 2000&ndash;2025 ("is this getting worse")</li>
         <li class="done"><span class="mark">&#10003;</span> GDELT news-attention timeline</li>
         <li class="done"><span class="mark">&#10003;</span> Narrative/preparedness section &mdash; warning systems, cited 2026-response lessons, NDMA household guidance</li>
@@ -1406,10 +1493,18 @@
         [2026]." News-attention data: the
         <a href="https://www.gdeltproject.org/" target="_blank" rel="noopener">GDELT Project</a>,
         whose terms require this citation and link on any use or
-        redistribution of the data. Impact/causation figures: cited news
-        reporting and Wikipedia, factual figures only, linked at point of
-        use, no article text reproduced beyond a couple of short paraphrased
-        or attributed phrases.
+        redistribution of the data. District boundaries: contains
+        information from <a href="https://www.geoboundaries.org/" target="_blank" rel="noopener">geoBoundaries</a>
+        (India ADM2, sourced from India's Local Government Directory),
+        made available under the
+        <a href="https://opendatacommons.org/licenses/odbl/1-0/" target="_blank" rel="noopener">Open Database License (ODbL) v1.0</a>
+        &mdash; a stricter share-alike term than this project's other
+        sources, since republishing the boundary geometries themselves
+        (not just statistics derived from them) is what triggers it.
+        Impact/causation figures: cited news reporting and Wikipedia,
+        factual figures only, linked at point of use, no article text
+        reproduced beyond a couple of short paraphrased or attributed
+        phrases.
       </p>
 
       <div class="footer-links">
@@ -1708,9 +1803,110 @@
     }
   }
 
+  function hexToRgb(hex) {
+    const h = hex.trim().replace("#", "");
+    return [0, 2, 4].map(i => parseInt(h.substring(i, i + 2), 16));
+  }
+
+  function interpolateColor(hexA, hexB, t) {
+    const [r1, g1, b1] = hexToRgb(hexA);
+    const [r2, g2, b2] = hexToRgb(hexB);
+    const r = Math.round(r1 + (r2 - r1) * t);
+    const g = Math.round(g1 + (g2 - g1) * t);
+    const b = Math.round(b1 + (b2 - b1) * t);
+    return `rgb(${r}, ${g}, ${b})`;
+  }
+
+  function eachRingCoord(geometry, fn) {
+    const polys = geometry.type === "MultiPolygon" ? geometry.coordinates : [geometry.coordinates];
+    polys.forEach(poly => poly.forEach(ring => ring.forEach(([lon, lat]) => fn(lon, lat))));
+  }
+
+  function buildProjection(features, W, H, padding) {
+    let minLon = Infinity, maxLon = -Infinity, minLat = Infinity, maxLat = -Infinity;
+    features.forEach(f => eachRingCoord(f.geometry, (lon, lat) => {
+      minLon = Math.min(minLon, lon); maxLon = Math.max(maxLon, lon);
+      minLat = Math.min(minLat, lat); maxLat = Math.max(maxLat, lat);
+    }));
+    const cosLat = Math.cos((minLat + maxLat) / 2 * Math.PI / 180);
+    const projX = lon => (lon - minLon) * cosLat;
+    const projY = lat => maxLat - lat; // flip so north is up in SVG's y-down space
+    const projW = projX(maxLon) || 1;
+    const projH = projY(minLat) || 1;
+    const scale = Math.min((W - 2 * padding) / projW, (H - 2 * padding) / projH);
+    const offsetX = padding + (W - 2 * padding - projW * scale) / 2;
+    const offsetY = padding + (H - 2 * padding - projH * scale) / 2;
+    return (lon, lat) => [offsetX + projX(lon) * scale, offsetY + projY(lat) * scale];
+  }
+
+  function ringToPath(ring, toXY) {
+    return ring.map(([lon, lat], i) => {
+      const [x, y] = toXY(lon, lat);
+      return `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(" ") + "Z";
+  }
+
+  function geometryToPath(geometry, toXY) {
+    const polys = geometry.type === "MultiPolygon" ? geometry.coordinates : [geometry.coordinates];
+    return polys.map(poly => poly.map(ring => ringToPath(ring, toXY)).join(" ")).join(" ");
+  }
+
+  function buildDistrictMap(region, boundaries, extentByDistrict) {
+    const W = 380, H = 340, padding = 18;
+    const features = boundaries.features.filter(f => f.properties.region === region);
+    if (!features.length) return;
+    const toXY = buildProjection(features, W, H, padding);
+
+    const values = extentByDistrict.filter(d => d.region === region);
+    const byDistrict = Object.fromEntries(values.map(d => [d.district, d]));
+    const maxKm2 = Math.max(...values.map(d => d.flooded_area_km2), 0.01);
+
+    const style = getComputedStyle(document.documentElement);
+    const lowColor = style.getPropertyValue("--surface-2").trim();
+    const highColor = style.getPropertyValue("--alert").trim();
+
+    const svg = document.getElementById(`map-${region}`);
+    let html = "";
+    features.forEach(f => {
+      const district = f.properties.district;
+      const rec = byDistrict[district];
+      const t = rec ? Math.min(rec.flooded_area_km2 / maxKm2, 1) : 0;
+      const fill = interpolateColor(lowColor, highColor, t);
+      const d = geometryToPath(f.geometry, toXY);
+      html += `<path d="${d}" fill="${fill}" stroke="var(--surface)" stroke-width="1.5" class="district-shape" data-district="${district}" />`;
+    });
+    svg.innerHTML = html;
+
+    document.getElementById(`map-legend-max-${region}`).textContent =
+      Math.round(maxKm2).toLocaleString("en-US") + " km²";
+
+    const tooltip = document.getElementById(`tooltip-map-${region}`);
+    const wrap = document.getElementById(`map-${region}-wrap`);
+    svg.querySelectorAll(".district-shape").forEach(el => {
+      const district = el.dataset.district;
+      const rec = byDistrict[district];
+      const show = evt => {
+        const wrapRect = wrap.getBoundingClientRect();
+        tooltip.style.left = (evt.clientX - wrapRect.left) + "px";
+        tooltip.style.top = (evt.clientY - wrapRect.top) + "px";
+        tooltip.innerHTML = rec
+          ? `<div class="tt-date">${district}</div>${rec.flooded_area_km2.toFixed(1)} km&sup2; flooded` +
+            (rec.after_window_widened ? "<br/><span style='color:var(--amber)'>widened window</span>" : "")
+          : `<div class="tt-date">${district}</div>no data`;
+        tooltip.classList.add("visible");
+      };
+      el.addEventListener("pointerenter", show);
+      el.addEventListener("pointermove", show);
+      el.addEventListener("pointerleave", () => tooltip.classList.remove("visible"));
+    });
+  }
+
   async function loadSiteData() {
-    const [rainfall, trend, news, newsAttention, floodExtent] = await Promise.all(
-      ["data/rainfall.json", "data/trend.json", "data/news.json", "data/news_attention.json", "data/flood_extent.json"].map(
+    const [rainfall, trend, news, newsAttention, floodExtent, districtBoundaries, floodExtentByDistrict] = await Promise.all(
+      [
+        "data/rainfall.json", "data/trend.json", "data/news.json", "data/news_attention.json",
+        "data/flood_extent.json", "data/district_boundaries.json", "data/flood_extent_by_district.json",
+      ].map(
         url => fetch(url).then(r => {
           if (!r.ok) throw new Error(`${url}: HTTP ${r.status}`);
           return r.json();
@@ -1734,6 +1930,9 @@
     applyNewsAttention(newsAttention);
 
     applyFloodExtent(floodExtent);
+
+    buildDistrictMap("assam", districtBoundaries, floodExtentByDistrict);
+    buildDistrictMap("gujarat", districtBoundaries, floodExtentByDistrict);
   }
 
   loadSiteData().catch(err => {
