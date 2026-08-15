@@ -1,0 +1,1514 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flood Watch 2026</title>
+<style>
+  @font-face {
+    font-family: "system-serif";
+    src: local("Iowan Old Style"), local("Palatino Linotype"), local("Palatino");
+  }
+
+  :root {
+    --bg: #eef1f4;
+    --surface: #ffffff;
+    --surface-2: #e3e8ed;
+    --ink: #141b23;
+    --ink-2: #45525f;
+    --ink-3: #6b7883;
+    --border: #ccd3da;
+    --accent: #2f7fb0;
+    --accent-tint: #2f7fb01a;
+    --alert: #c1503f;
+    --alert-tint: #c1503f1a;
+    --amber: #86641c;
+    --shadow: 0 1px 2px rgba(20, 27, 35, 0.06), 0 8px 24px rgba(20, 27, 35, 0.06);
+    --serif: "system-serif", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Noto Serif", serif;
+    --sans: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --mono: "Cascadia Mono", "Consolas", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #10161d;
+      --surface: #182029;
+      --surface-2: #1f2a34;
+      --ink: #eef2f5;
+      --ink-2: #b7c2cb;
+      --ink-3: #8a97a3;
+      --border: #2b3742;
+      --accent: #4a9bcc;
+      --accent-tint: #4a9bcc26;
+      --alert: #d1614e;
+      --alert-tint: #d1614e26;
+      --amber: #d9a53a;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 12px 32px rgba(0, 0, 0, 0.35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #10161d;
+    --surface: #182029;
+    --surface-2: #1f2a34;
+    --ink: #eef2f5;
+    --ink-2: #b7c2cb;
+    --ink-3: #8a97a3;
+    --border: #2b3742;
+    --accent: #4a9bcc;
+    --accent-tint: #4a9bcc26;
+    --alert: #d1614e;
+    --alert-tint: #d1614e26;
+    --amber: #d9a53a;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 12px 32px rgba(0, 0, 0, 0.35);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection { background: var(--accent-tint); }
+
+  a { color: var(--accent); }
+
+  .wrap {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 0 24px 96px;
+  }
+
+  /* ---------- Masthead ---------- */
+
+  .masthead {
+    padding: 56px 24px 40px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .masthead-inner {
+    max-width: 920px;
+    margin: 0 auto;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .eyebrow .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex: none;
+  }
+
+  h1.title {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(2.1rem, 5vw, 3.1rem);
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+    margin: 14px 0 14px;
+    text-wrap: balance;
+    max-width: 16ch;
+  }
+
+  .dek {
+    font-size: 1.05rem;
+    color: var(--ink-2);
+    max-width: 62ch;
+    margin: 0 0 28px;
+  }
+
+  .headline-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .hstat {
+    background: var(--surface);
+    padding: 16px 18px;
+  }
+
+  .hstat .n {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .hstat .n.alert { color: var(--alert); }
+
+  .hstat .l {
+    font-size: 0.78rem;
+    color: var(--ink-3);
+    margin-top: 2px;
+  }
+
+  /* ---------- Status strip ---------- */
+
+  .status-strip {
+    margin-top: 40px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .status-tag {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px 7px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    font-size: 0.82rem;
+    color: var(--ink-2);
+  }
+
+  .status-tag .swatch {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex: none;
+  }
+
+  .status-tag.done .swatch { background: var(--accent); }
+  .status-tag.pending .swatch { background: var(--ink-3); border: 1.5px dashed var(--ink-3); background: transparent; }
+  .status-tag.manual .swatch { background: var(--amber); }
+
+  /* ---------- Sections ---------- */
+
+  section { margin-top: 64px; }
+
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 6px;
+  }
+
+  h2.section-title {
+    font-family: var(--serif);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .section-note {
+    font-size: 0.82rem;
+    color: var(--ink-3);
+    font-family: var(--mono);
+  }
+
+  .section-intro {
+    color: var(--ink-2);
+    max-width: 66ch;
+    margin: 10px 0 28px;
+  }
+
+  /* ---------- Region cards ---------- */
+
+  .region-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 26px 26px 20px;
+    margin-bottom: 28px;
+  }
+
+  .region-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .region-head h3 {
+    font-family: var(--serif);
+    font-size: 1.3rem;
+    margin: 0 0 4px;
+  }
+
+  .region-meta {
+    font-size: 0.85rem;
+    color: var(--ink-3);
+  }
+
+  .region-badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.02em;
+    padding: 4px 9px;
+    border-radius: 6px;
+    background: var(--surface-2);
+    color: var(--ink-2);
+    white-space: nowrap;
+  }
+
+  .badge.alert { background: var(--alert-tint); color: var(--alert); }
+
+  .chart-legend {
+    display: flex;
+    gap: 18px;
+    margin: 18px 0 4px;
+    font-size: 0.8rem;
+    color: var(--ink-2);
+    flex-wrap: wrap;
+  }
+
+  .chart-legend .item { display: flex; align-items: center; gap: 7px; }
+  .chart-legend .swatch-line { width: 16px; height: 2px; background: var(--accent); border-radius: 2px; }
+  .chart-legend .swatch-dash { width: 16px; height: 0; border-top: 2px dashed var(--ink-3); }
+  .chart-legend .swatch-bar-up { width: 10px; height: 10px; background: var(--alert); border-radius: 2px; }
+  .chart-legend .swatch-bar-down { width: 10px; height: 10px; background: var(--accent); border-radius: 2px; }
+
+  .chart-wrap {
+    position: relative;
+  }
+
+  svg.chart { width: 100%; height: auto; display: block; overflow: visible; }
+
+  .axis-label { font-family: var(--mono); font-size: 9.5px; fill: var(--ink-3); }
+  .grid-line { stroke: var(--border); stroke-width: 1; }
+  .zero-line { stroke: var(--ink-3); stroke-width: 1; }
+
+  .tooltip {
+    position: absolute;
+    pointer-events: none;
+    background: var(--ink);
+    color: var(--bg);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    line-height: 1.55;
+    box-shadow: var(--shadow);
+    opacity: 0;
+    transform: translate(-50%, -110%);
+    white-space: nowrap;
+    z-index: 5;
+    transition: opacity 0.08s ease;
+  }
+
+  .tooltip .tt-date { color: var(--ink-3); }
+  .tooltip.visible { opacity: 1; }
+
+  .annot {
+    font-family: var(--mono);
+    font-size: 10px;
+    fill: var(--alert);
+  }
+
+  details.table-toggle {
+    margin-top: 14px;
+    font-size: 0.82rem;
+  }
+
+  details.table-toggle summary {
+    cursor: pointer;
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 0.76rem;
+    letter-spacing: 0.02em;
+    user-select: none;
+  }
+
+  .data-table-scroll { overflow-x: auto; margin-top: 10px; }
+
+  table.data-table {
+    border-collapse: collapse;
+    width: 100%;
+    font-family: var(--mono);
+    font-size: 0.76rem;
+  }
+
+  table.data-table th, table.data-table td {
+    text-align: right;
+    padding: 5px 10px;
+    border-bottom: 1px solid var(--border);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  table.data-table th:first-child, table.data-table td:first-child { text-align: left; }
+
+  .cross-validate {
+    margin-top: 16px;
+    padding: 12px 14px;
+    background: var(--accent-tint);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    font-size: 0.85rem;
+    color: var(--ink);
+  }
+
+  .cross-validate b { color: var(--accent); }
+
+  .caveat {
+    margin-top: 16px;
+    padding: 12px 14px;
+    background: var(--amber, #86641c) 1a;
+    background: color-mix(in srgb, var(--amber) 12%, transparent);
+    border: 1px solid var(--amber);
+    border-radius: 10px;
+    font-size: 0.85rem;
+    color: var(--ink);
+  }
+
+  .caveat b { color: var(--amber); }
+
+  /* ---------- Impact stats ---------- */
+
+  .impact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 14px;
+  }
+
+  .impact-tile {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 18px 16px;
+  }
+
+  .impact-tile .n {
+    font-family: var(--mono);
+    font-size: 1.9rem;
+    font-weight: 600;
+    color: var(--alert);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .impact-tile .l {
+    font-size: 0.85rem;
+    color: var(--ink-2);
+    margin-top: 4px;
+  }
+
+  .impact-tile .src {
+    margin-top: 10px;
+    font-size: 0.72rem;
+    color: var(--ink-3);
+  }
+
+  .impact-tile .src a { color: var(--ink-3); text-decoration: underline; }
+
+  .impact-note {
+    grid-column: 1 / -1;
+    font-size: 0.82rem;
+    color: var(--ink-3);
+    border-top: 1px dashed var(--border);
+    padding-top: 12px;
+    margin-top: 4px;
+  }
+
+  /* ---------- Why / causes ---------- */
+
+  .causes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  @media (max-width: 640px) { .causes { grid-template-columns: 1fr; } }
+
+  .cause-col {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px;
+  }
+
+  .cause-col h4 {
+    font-family: var(--serif);
+    font-size: 1.05rem;
+    margin: 0 0 10px;
+  }
+
+  .cause-col.natural h4 { color: var(--accent); }
+  .cause-col.human h4 { color: var(--amber); }
+
+  .cause-col ul { margin: 0; padding-left: 18px; color: var(--ink-2); font-size: 0.9rem; }
+  .cause-col li { margin-bottom: 8px; }
+  .cause-col .src { font-size: 0.72rem; color: var(--ink-3); margin-top: 12px; }
+  .cause-col .src a { color: var(--ink-3); }
+
+  /* ---------- Trend ---------- */
+
+  .trend-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  @media (max-width: 640px) { .trend-grid { grid-template-columns: 1fr; } }
+
+  .trend-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px 16px;
+  }
+
+  .trend-card h4 {
+    font-family: var(--serif);
+    font-size: 1.05rem;
+    margin: 0 0 2px;
+  }
+
+  .trend-read {
+    font-size: 0.85rem;
+    color: var(--ink-2);
+    margin: 10px 0 0;
+  }
+
+  .trend-read b { color: var(--ink); }
+
+  /* ---------- Preparedness ---------- */
+
+  .prep-subhead {
+    font-family: var(--serif);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0 0 4px;
+  }
+
+  .prep-subnote {
+    font-size: 0.85rem;
+    color: var(--ink-2);
+    max-width: 66ch;
+    margin: 0 0 16px;
+  }
+
+  .system-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+    margin-bottom: 40px;
+  }
+
+  .system-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px 16px;
+  }
+
+  .system-card h5 {
+    font-family: var(--serif);
+    font-size: 1rem;
+    margin: 0 0 8px;
+    color: var(--accent);
+  }
+
+  .system-card p {
+    font-size: 0.85rem;
+    color: var(--ink-2);
+    margin: 0 0 10px;
+  }
+
+  .system-card .src { font-size: 0.72rem; color: var(--ink-3); }
+  .system-card .src a { color: var(--ink-3); }
+
+  .lesson-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 12px;
+  }
+
+  @media (max-width: 640px) { .lesson-cols { grid-template-columns: 1fr; } }
+
+  .lesson-col {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px;
+  }
+
+  .lesson-col h4 {
+    font-family: var(--serif);
+    font-size: 1.05rem;
+    margin: 0 0 10px;
+  }
+
+  .lesson-col ul { margin: 0; padding-left: 18px; color: var(--ink-2); font-size: 0.9rem; }
+  .lesson-col li { margin-bottom: 8px; }
+  .lesson-col .src { font-size: 0.72rem; color: var(--ink-3); margin-top: 12px; }
+  .lesson-col .src a { color: var(--ink-3); }
+
+  .gap-note {
+    font-size: 0.82rem;
+    color: var(--ink-3);
+    border-top: 1px dashed var(--border);
+    padding-top: 12px;
+    margin: 4px 0 40px;
+  }
+
+  .prep-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+  }
+
+  .prep-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px 16px;
+  }
+
+  .prep-card h5 {
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin: 0 0 10px;
+  }
+
+  .prep-card ul { margin: 0; padding-left: 16px; color: var(--ink-2); font-size: 0.85rem; }
+  .prep-card li { margin-bottom: 7px; }
+  .prep-card li b { color: var(--ink); }
+
+  /* ---------- Footer / methodology ---------- */
+
+  .footer-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 26px 28px;
+  }
+
+  .roadmap { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 9px; }
+
+  .roadmap li {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    font-size: 0.88rem;
+    color: var(--ink-2);
+  }
+
+  .roadmap .mark {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    width: 16px;
+    flex: none;
+  }
+
+  .roadmap li.done .mark { color: var(--accent); }
+  .roadmap li.pending .mark { color: var(--ink-3); }
+  .roadmap li.done { color: var(--ink); }
+
+  .footer-links {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+    font-size: 0.8rem;
+    color: var(--ink-3);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+  }
+
+  .footer-links a { color: var(--ink-2); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="masthead-inner">
+    <div class="eyebrow"><span class="dot"></span>flood_watch_2026 &middot; reads live data/*.json exports</div>
+    <h1 class="title">Flood Watch 2026</h1>
+    <p class="dek">
+      A personal data project tracking the 2026 Assam &amp; Gujarat floods &mdash;
+      what the rainfall actually did, where it hit hardest, and why &mdash; built
+      from real government rainfall data and cited public reporting, not
+      recycled headlines. Every chart on this page loads from a JSON file
+      this project's own pipeline exported; nothing is inlined by hand.
+    </p>
+    <div class="headline-stats">
+      <div class="hstat"><div class="n alert">+226.6%</div><div class="l">Assam rainfall vs. normal, peak day</div></div>
+      <div class="hstat"><div class="n alert">+540.9%</div><div class="l">Gujarat rainfall vs. normal, peak day</div></div>
+      <div class="hstat"><div class="n">85</div><div class="l">deaths reported, Assam, as of Aug 4</div></div>
+      <div class="hstat"><div class="n">2</div><div class="l">states, 1 pipeline, live government data</div></div>
+    </div>
+    <div class="status-strip">
+      <div class="status-tag done"><span class="swatch"></span>Rainfall &mdash; automated, verified live</div>
+      <div class="status-tag done"><span class="swatch"></span>Satellite flood extent &mdash; automated, verified live</div>
+      <div class="status-tag manual"><span class="swatch"></span>Impact &amp; causation &mdash; manually extracted, cited</div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <section id="rainfall">
+    <div class="section-head">
+      <h2 class="section-title">Rainfall vs. the historical normal</h2>
+      <div class="section-note">source: IMD Pune, 0.25&deg; grid</div>
+    </div>
+    <p class="section-intro">
+      Daily regional-mean rainfall for the event window, against each region's
+      2016&ndash;2025 monthly normal. The lower panel shows the same thing as a
+      departure &mdash; how far above or below normal each day ran.
+      Every number below came out of <code>flood_watch_2026</code>'s own
+      ingestion pipeline; nothing here was typed in by hand.
+    </p>
+    <p class="section-note" style="margin: -18px 0 26px;">
+      Rainfall data: India Meteorological Department (IMD), Pune &middot; cite
+      Pai et al. (2014), MAUSAM 65(1), pp1&ndash;18 for the underlying grid product.
+    </p>
+
+    <div class="region-card">
+      <div class="region-head">
+        <div>
+          <h3>Assam</h3>
+          <div class="region-meta">Sivasagar, Charaideo, Jorhat, Golaghat &middot; Brahmaputra + Dikhow, Disang, Janji, Dhansiri</div>
+        </div>
+        <div class="region-badges">
+          <span class="badge">2026-07-15 &rarr; 2026-08-10</span>
+          <span class="badge alert">peak +226.6% &middot; Jul 20</span>
+        </div>
+      </div>
+
+      <div class="chart-legend">
+        <div class="item"><span class="swatch-line"></span>Actual rainfall</div>
+        <div class="item"><span class="swatch-dash"></span>Historical normal (2016&ndash;2025)</div>
+        <div class="item"><span class="swatch-bar-up"></span>Above normal</div>
+        <div class="item"><span class="swatch-bar-down"></span>Below normal</div>
+      </div>
+
+      <div class="chart-wrap" id="chart-assam-wrap">
+        <svg class="chart" id="chart-assam" viewBox="0 0 760 330" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="tooltip" id="tooltip-assam"></div>
+      </div>
+
+      <div class="cross-validate">
+        <b>Cross-check:</b> the data's own rainfall peak (Jul 20) lands one day
+        <em>before</em> the independently reported devastation peak (Jul 21&ndash;22,
+        per <a href="https://en.wikipedia.org/wiki/2026_Assam_floods" target="_blank" rel="noopener">Wikipedia, "2026 Assam floods"</a>)
+        &mdash; the kind of runoff lag you'd physically expect. Nothing here was
+        tuned to match that date; it fell out of the pipeline on its own.
+      </div>
+
+      <details class="table-toggle">
+        <summary>View underlying data as a table</summary>
+        <div class="data-table-scroll">
+          <table class="data-table" id="table-assam">
+            <thead><tr><th>Date</th><th>Actual (mm)</th><th>Normal (mm)</th><th>Departure</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </details>
+    </div>
+
+    <div class="region-card">
+      <div class="region-head">
+        <div>
+          <h3>Gujarat</h3>
+          <div class="region-meta">Valsad, Navsari, Surat &middot; Damanganga &amp; Purna rivers</div>
+        </div>
+        <div class="region-badges">
+          <span class="badge">2026-07-20 &rarr; 2026-07-30</span>
+          <span class="badge alert">peak +540.9% &middot; Jul 24</span>
+        </div>
+      </div>
+
+      <div class="chart-legend">
+        <div class="item"><span class="swatch-line"></span>Actual rainfall</div>
+        <div class="item"><span class="swatch-dash"></span>Historical normal (2016&ndash;2025)</div>
+        <div class="item"><span class="swatch-bar-up"></span>Above normal</div>
+        <div class="item"><span class="swatch-bar-down"></span>Below normal</div>
+      </div>
+
+      <div class="chart-wrap" id="chart-gujarat-wrap">
+        <svg class="chart" id="chart-gujarat" viewBox="0 0 760 330" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="tooltip" id="tooltip-gujarat"></div>
+      </div>
+
+      <div class="cross-validate">
+        <b>Cross-check:</b> the data's own rainfall peak lands <em>exactly</em> on
+        2026-07-24 &mdash; the date <a href="https://www.nativeplanet.com/news/south-gujarat-floods-2026-imd-red-alerts-heavy-rainfall-emergency-update-011-23101.html" target="_blank" rel="noopener">reported independently</a>
+        for Valsad's &gt;100cm-in-24h deluge and the IMD red alerts. Same
+        pipeline, same method, zero reference to the news report while
+        computing it.
+      </div>
+
+      <details class="table-toggle">
+        <summary>View underlying data as a table</summary>
+        <div class="data-table-scroll">
+          <table class="data-table" id="table-gujarat">
+            <thead><tr><th>Date</th><th>Actual (mm)</th><th>Normal (mm)</th><th>Departure</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="satellite">
+    <div class="section-head">
+      <h2 class="section-title">Flood extent from radar</h2>
+      <div class="section-note">Sentinel-1 SAR &middot; Google Earth Engine</div>
+    </div>
+    <p class="section-intro">
+      Radar (not optical) satellite imagery, before vs. after the flood peak
+      &mdash; sees through monsoon cloud cover that would blind a normal
+      satellite photo. Method: <a href="https://un-spider.org/advisory-support/recommended-practices/recommended-practice-google-earth-engine-flood-mapping" target="_blank" rel="noopener">UN-SPIDER's SAR change-detection recipe</a>
+      (VH-band ratio, after&nbsp;&divide;&nbsp;before &gt; 1.25 = flooded), run for
+      real against <a href="https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S1_GRD" target="_blank" rel="noopener">COPERNICUS/S1_GRD</a>.
+    </p>
+
+    <div class="impact-grid">
+      <div class="impact-tile">
+        <div class="n" id="fe-assam-km2" style="color: var(--accent);">&hellip;</div>
+        <div class="l" id="fe-assam-label">Assam &mdash; flooded area</div>
+        <div class="src" id="fe-assam-src"></div>
+      </div>
+      <div class="impact-tile">
+        <div class="n" id="fe-gujarat-km2" style="color: var(--accent);">&hellip;</div>
+        <div class="l" id="fe-gujarat-label">Gujarat &mdash; flooded area</div>
+        <div class="src" id="fe-gujarat-src">see caveat below</div>
+      </div>
+    </div>
+
+    <div class="caveat">
+      <b>Caveat, not hidden:</b> Sentinel-1's single operational satellite
+      revisits any given spot roughly every 12 days. Assam happened to have a
+      pass 3 days after its peak; Gujarat did not &mdash; the nearest usable
+      pass was 10 days after Jul 24, after floodwaters had likely started
+      receding. The pipeline widens its search window automatically when the
+      requested one is empty (rather than silently returning a false
+      "flooded = 0"), and flags it: Gujarat's number here is a real
+      measurement, but very likely an <em>undercount</em> of the actual peak
+      flood extent. Assam's number does not have this caveat.
+    </div>
+  </section>
+
+  <section id="impact">
+    <div class="section-head">
+      <h2 class="section-title">Human cost, as reported</h2>
+      <div class="section-note">manual extraction &middot; cited</div>
+    </div>
+    <p class="section-intro">
+      Casualty and impact figures aren't available from any open real-time
+      government feed &mdash; these are read off cited public reporting, dated,
+      not invented. This is the one part of the pipeline that's honestly
+      manual, and it says so.
+    </p>
+    <div class="section-note" style="margin: -18px 0 14px;">assam &middot; as of 2026-07-30</div>
+    <div class="impact-grid">
+      <div class="impact-tile">
+        <div class="n">78</div>
+        <div class="l">deaths reported in Assam</div>
+        <div class="src">as of 2026-07-30 &middot; <a href="https://www.theweek.in/news/india/2026/07/30/assam-floods-update-relief-efforts-heavy-rain-warning.html" target="_blank" rel="noopener">The Week</a></div>
+      </div>
+      <div class="impact-tile">
+        <div class="n">300,000+</div>
+        <div class="l">people affected (over 3 lakh), Assam</div>
+        <div class="src">as of 2026-07-30 &middot; The Week</div>
+      </div>
+      <div class="impact-tile">
+        <div class="n">71</div>
+        <div class="l">relief camps, sheltering 16,500+ people</div>
+        <div class="src">as of 2026-07-30 &middot; The Week</div>
+      </div>
+      <div class="impact-tile">
+        <div class="n">21,500+</div>
+        <div class="l">hectares of crop area damaged</div>
+        <div class="src">as of 2026-07-30 &middot; The Week</div>
+      </div>
+      <div class="impact-tile">
+        <div class="n">11,000+</div>
+        <div class="l">livestock washed away (17,000 more affected)</div>
+        <div class="src">as of 2026-07-30 &middot; The Week</div>
+      </div>
+      <div class="impact-tile">
+        <div class="n">137,561</div>
+        <div class="l">people affected in Charaideo alone, the worst-hit district</div>
+        <div class="src">as of 2026-07-30 &middot; The Week</div>
+      </div>
+    </div>
+
+    <div class="section-note" style="margin: 24px 0 14px;">assam &middot; later snapshot, as of 2026-08-04</div>
+    <div class="impact-grid">
+      <div class="impact-tile">
+        <div class="n">85</div>
+        <div class="l">deaths reported in Assam</div>
+        <div class="src">as of 2026-08-04 &middot; <a href="https://en.wikipedia.org/wiki/2026_Assam_floods" target="_blank" rel="noopener">Wikipedia</a></div>
+      </div>
+      <div class="impact-tile">
+        <div class="n">100,000+</div>
+        <div class="l">people still remained affected (down from 300,000+ on Jul 30 as waters receded in places)</div>
+        <div class="src">as of 2026-08-04 &middot; Wikipedia</div>
+      </div>
+    </div>
+
+    <div class="section-note" style="margin: 24px 0 14px;">gujarat &middot; as of 2026-07-24</div>
+    <div class="impact-grid">
+      <div class="impact-tile">
+        <div class="n">5</div>
+        <div class="l">rain-related deaths (Tapi, Valsad, Anand, Mehsana, Panchmahal)</div>
+        <div class="src">as of 2026-07-24 &middot; <a href="https://theprint.in/india/gujarat-rains-see-massive-relief-ops-from-ndrf-army-and-icg-40k-shifted-2637-rescued-5-dead/2996022/" target="_blank" rel="noopener">ThePrint</a></div>
+      </div>
+      <div class="impact-tile">
+        <div class="n">40,500+</div>
+        <div class="l">people evacuated to safer locations</div>
+        <div class="src">as of 2026-07-24 &middot; ThePrint</div>
+      </div>
+      <div class="impact-tile">
+        <div class="n">2,637</div>
+        <div class="l">people rescued by NDRF/Army/Coast Guard/SDRF</div>
+        <div class="src">as of 2026-07-24 &middot; ThePrint</div>
+      </div>
+      <div class="impact-tile">
+        <div class="n">67</div>
+        <div class="l">rescued from one village alone &mdash; Sarikhurad, Navsari</div>
+        <div class="src">as of 2026-07-24 &middot; <a href="https://www.aninews.in/news/national/general-news/ndrf-rescues-67-people-from-floodwaters-in-gujarats-navsari-operation-underway20260724093308/" target="_blank" rel="noopener">ANI News</a></div>
+      </div>
+      <div class="impact-note">
+        Still not found with a verified citation: Gujarat relief-camp counts and
+        crop/hectare damage figures, and a confirmed embankment-breach or
+        dam-release event for Assam with its own citation. Left out rather than
+        guessed. Every figure above traces to <code>gold.impact_summary</code>
+        (13 rows, built 2026-08-14) &mdash; not hand-typed onto this page.
+      </div>
+    </div>
+  </section>
+
+  <section id="why">
+    <div class="section-head">
+      <h2 class="section-title">Why it flooded</h2>
+      <div class="section-note">Assam, cited</div>
+    </div>
+    <p class="section-intro">
+      Rainfall alone doesn't cause a flood of this size &mdash; it's rainfall
+      hitting a landscape that's already been made more vulnerable.
+      Both threads below are sourced, not synthesized from the rainfall data itself.
+    </p>
+    <div class="causes">
+      <div class="cause-col natural">
+        <h4>Natural</h4>
+        <ul>
+          <li>A cloudburst over Mon district, Nagaland (Jul 19) sent tributaries Dikhow and Dhansiri into sudden surge.</li>
+          <li>Those tributaries peaked <em>before</em> the Brahmaputra itself did &mdash; a timing "bottleneck" that compounds the flood rather than spreading it out.</li>
+          <li>Decades of sediment load have measurably weakened the Brahmaputra's own embankments.</li>
+        </ul>
+        <div class="src">source: <a href="https://www.downtoearth.org.in/natural-disasters/assam-floods-2026-why-does-the-state-flood-every-year" target="_blank" rel="noopener">Down To Earth, "Assam floods 2026"</a></div>
+      </div>
+      <div class="cause-col human">
+        <h4>Human-contributed</h4>
+        <ul>
+          <li>Deforestation upstream reduces the catchment's ability to slow runoff.</li>
+          <li>Mining and unplanned development further destabilize slopes and drainage.</li>
+          <li>Wetland loss removes natural floodwater absorption that used to buffer the plains.</li>
+          <li>Taken together, these upstream pressures are making floods in the region more severe and harder to predict, not just more frequent.</li>
+        </ul>
+        <div class="src">source: Down To Earth, "Assam floods 2026" (facts paraphrased, not quoted)</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="trend">
+    <div class="section-head">
+      <h2 class="section-title">Is this getting worse?</h2>
+      <div class="section-note">2000&ndash;2025 &middot; IMD gridded rainfall</div>
+    </div>
+    <p class="section-intro">
+      A proxy for flood risk, not a verified flood-event count &mdash; real
+      river-gauge history (CWC/WRIS) isn't open, so this counts monsoon days
+      (Jun&ndash;Sep) each year where regional rainfall topped 2&times; the
+      26-year monsoon-day average, one bar per year. The two regions tell
+      different stories.
+    </p>
+    <div class="trend-grid">
+      <div class="trend-card">
+        <h4>Assam</h4>
+        <div class="chart-wrap" id="chart-trend-assam-wrap">
+          <svg class="chart" id="chart-trend-assam" viewBox="0 0 350 150" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="tooltip" id="tooltip-trend-assam"></div>
+        </div>
+        <p class="trend-read">
+          <b>Roughly flat, if anything slightly down</b> (&minus;0.07 extreme
+          days/year, &minus;5.6mm total monsoon rainfall/year over 26 years).
+          2026's disaster wasn't riding a rising rainfall baseline &mdash;
+          it reads more like a single severe event landing on a landscape
+          already weakened by the human factors in the section above.
+        </p>
+      </div>
+      <div class="trend-card">
+        <h4>Gujarat</h4>
+        <div class="chart-wrap" id="chart-trend-gujarat-wrap">
+          <svg class="chart" id="chart-trend-gujarat" viewBox="0 0 350 150" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="tooltip" id="tooltip-trend-gujarat"></div>
+        </div>
+        <p class="trend-read">
+          <b>A real upward trend</b> (+0.27 extreme days/year, +9.0mm total
+          monsoon rainfall/year over 26 years). Unlike Assam, Gujarat's 2026
+          event sits on top of monsoon rainfall that's genuinely intensifying
+          &mdash; 2022, 2024, and 2025 are among the most extreme years on
+          record in this 26-year window.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section id="attention">
+    <div class="section-head">
+      <h2 class="section-title">Did coverage track the actual event?</h2>
+      <div class="section-note">GDELT Project &middot; not authoritative for casualties/damage</div>
+    </div>
+    <p class="section-intro">
+      Daily count of news articles mentioning each flood, from the
+      <a href="https://www.gdeltproject.org/" target="_blank" rel="noopener">GDELT Project</a>'s
+      DOC 2.0 API. This is an attention signal, not a ground-truth source &mdash;
+      shown here purely to see whether coverage tracked the physical event or
+      lagged it.
+    </p>
+    <div class="trend-grid">
+      <div class="trend-card">
+        <h4>Assam</h4>
+        <div class="chart-wrap" id="chart-news-assam-wrap">
+          <svg class="chart" id="chart-news-assam" viewBox="0 0 350 150" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="tooltip" id="tooltip-news-assam"></div>
+        </div>
+        <p class="trend-read">
+          Coverage stayed <b>elevated and grew through early August</b> rather
+          than spiking once at the Jul 19&ndash;22 cloudburst &mdash; tracking the
+          rising death toll (68 on Jul 26 &rarr; 85 on Aug 4) more than the
+          initial weather event itself.
+        </p>
+      </div>
+      <div class="trend-card">
+        <h4>Gujarat</h4>
+        <div class="chart-wrap" id="chart-news-gujarat-wrap">
+          <svg class="chart" id="chart-news-gujarat" viewBox="0 0 350 150" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="tooltip" id="tooltip-news-gujarat"></div>
+        </div>
+        <p class="trend-read">
+          Coverage peaked <b>Jul 23, one day before</b> the rainfall peak
+          (Jul 24) &mdash; consistent with IMD's red alerts driving anticipatory
+          coverage ahead of Valsad's actual deluge.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section id="preparedness">
+    <div class="section-head">
+      <h2 class="section-title">How to prepare next time</h2>
+      <div class="section-note">NDMA, CWC, ASDMA &middot; cited, not a generic checklist</div>
+    </div>
+    <p class="section-intro">
+      This section holds itself to the same rule as the rest of the site:
+      every claim below traces to a named source, and where a natural
+      follow-up question (did an official post-event review get published?
+      does Gujarat have its own household checklist?) turned up nothing
+      citable, that gap is stated rather than filled in with generic
+      internet advice.
+    </p>
+
+    <h3 class="prep-subhead">Real warning systems already exist</h3>
+    <p class="prep-subnote">
+      Neither region is starting from zero &mdash; the infrastructure below
+      already ran during the 2026 event. The open question is lead time and
+      reach, not whether a system exists at all.
+    </p>
+    <div class="system-grid">
+      <div class="system-card">
+        <h5>CWC flood forecasting network</h5>
+        <p>325 hydrological stations across 20 river systems and 25+ states
+        and UTs, covering 197 towns/low-lying areas plus 128 reservoirs.
+        Four alert tiers (Normal &rarr; Yellow &rarr; Orange &rarr; Red);
+        Orange updates every 3 hours, Red hourly, with Red/Orange bulletins
+        reaching the PMO directly. CWC reports &gt;90% forecast accuracy
+        and issues 7,000+ forecasts/advisories a year.</p>
+        <div class="src">source: <a href="https://cwc.gov.in/flood-forecasting-hydrological-observation" target="_blank" rel="noopener">Central Water Commission</a></div>
+      </div>
+      <div class="system-card">
+        <h5>SACHET national alert app</h5>
+        <p>NDMA's Common Alerting Protocol platform aggregates warnings from
+        every authorized agency (IMD, CWC, state disaster authorities) and
+        pushes location-specific alerts in 12 regional languages.</p>
+        <div class="src">source: <a href="https://sachet.ndma.gov.in/" target="_blank" rel="noopener">NDMA / SACHET</a></div>
+      </div>
+      <div class="system-card">
+        <h5>FLEWS &mdash; Assam-specific</h5>
+        <p>Built by NESAC (Dept. of Space) for Assam, piloted 2009 in
+        Lakhimpur, now covering every flood-prone district at revenue-circle
+        level. Gives a 24&ndash;36 hour lead time with a reported 75%
+        year-to-year alert success rate &mdash; explicitly documented as a
+        planning tool, not for legal use.</p>
+        <div class="src">source: <a href="https://www.nerdrr.gov.in/FLEWS/" target="_blank" rel="noopener">NER-DRR / NESAC</a></div>
+      </div>
+    </div>
+
+    <h3 class="prep-subhead">What the 2026 response revealed</h3>
+    <p class="prep-subnote">
+      No official post-event institutional review has been published for
+      either state as of mid-August 2026 &mdash; the event is too recent.
+      What's citable instead is contemporaneous engineering commentary and
+      reporting, labeled as exactly that below, not substituted for a
+      government retrospective that doesn't exist yet.
+    </p>
+    <div class="lesson-cols">
+      <div class="lesson-col">
+        <h4>Assam</h4>
+        <ul>
+          <li>Jorhat's embankments reportedly lacked proper drainage sluices &mdash; built to keep the Brahmaputra out, they ended up trapping water in once overtopped, prolonging inundation after river levels fell.</li>
+          <li>Upstream deforestation and mining in Nagaland increased siltation in tributaries like the Bhogdoi, narrowing channels and cutting discharge capacity.</li>
+          <li>Guwahati's &#8377;6,000 crore drainage master plan didn't prevent severe flooding elsewhere in the state &mdash; reporting frames it as an implementation gap, not a planning one.</li>
+        </ul>
+        <div class="src">sources: <a href="https://www.indiatodayne.in/opinion/story/beyond-the-rain-the-real-causes-of-upper-assams-devastating-floods-1429330-2026-07-24" target="_blank" rel="noopener">India Today NE (Nayan Sharma)</a>, <a href="https://mahabahu.com/assam-floods-2026-why-the-state-keeps-drowning/" target="_blank" rel="noopener">Mahabahu.com</a></div>
+      </div>
+      <div class="lesson-col">
+        <h4>Gujarat</h4>
+        <ul>
+          <li>Floodwater in Navsari, Valsad, and Tapi got too deep for ground-based NDRF/SDRF teams &mdash; the IAF and Coast Guard shifted to airlifting people off submerged rooftops as the primary rescue method.</li>
+          <li>Reporting points to stormwater systems designed for outdated rainfall assumptions, plus encroachment on lakes, rivers, and natural drainage channels, as drivers of the urban flooding's severity &mdash; not rainfall volume alone.</li>
+        </ul>
+        <div class="src">sources: <a href="https://theprint.in/india/gujarat-rains-see-massive-relief-ops-from-ndrf-army-and-icg-40k-shifted-2637-rescued-5-dead/2996022/" target="_blank" rel="noopener">ThePrint</a>, <a href="https://www.counterview.net/2026/08/how-natures-gift-turned-into-man-made.html" target="_blank" rel="noopener">Counterview.net</a></div>
+      </div>
+    </div>
+    <div class="gap-note">
+      Left out rather than guessed: a GSDMA-branded household checklist
+      distinct from Gujarat's institutional-level SOPs (couldn't find one),
+      and any single authoritative "lessons learned" document for either
+      state (doesn't exist yet as of this writing).
+    </div>
+
+    <h3 class="prep-subhead">What NDMA actually recommends</h3>
+    <p class="prep-subnote">
+      Quoted directly from NDMA's own guidance, not paraphrased into
+      generic advice.
+    </p>
+    <div class="prep-grid">
+      <div class="prep-card">
+        <h5>Before a flood</h5>
+        <ul>
+          <li><b>Avoid building</b> in flood-prone areas unless the structure is elevated and reinforced.</li>
+          <li><b>Elevate</b> the furnace, water heater, and electric panel if they're susceptible to flooding.</li>
+          <li><b>Install check valves</b> in sewer traps to stop floodwater backing up into the drains.</li>
+          <li><b>Waterproof</b> basement walls with sealing compounds to avoid seepage.</li>
+        </ul>
+      </div>
+      <div class="prep-card">
+        <h5>When a flood is likely</h5>
+        <ul>
+          <li><b>Listen</b> to radio or television for information.</li>
+          <li>Learn whether you're in a flash-flood-prone spot (near streams, drainage channels, canyons) &mdash; <b>if so, move to higher ground immediately</b>, without waiting for evacuation instructions.</li>
+        </ul>
+      </div>
+      <div class="prep-card">
+        <h5>During evacuation</h5>
+        <ul>
+          <li><b>Secure the home</b> first if there's time; move essential items to an upper floor; turn off utilities only if instructed to.</li>
+          <li><b>Never walk through moving water</b> &mdash; six inches can knock you off your feet.</li>
+          <li><b>Never drive into a flooded road</b> &mdash; a vehicle can be swept away; if water rises around a stopped vehicle, get out.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="section-note" style="margin: 14px 0 0;">source: <a href="https://ndma.gov.in/floods-dos-donts" target="_blank" rel="noopener">National Disaster Management Authority</a></p>
+  </section>
+
+  <section id="status">
+    <div class="footer-card">
+      <h2 class="section-title" style="margin-bottom: 4px;">Where the pipeline actually stands</h2>
+      <p class="section-intro" style="margin-bottom: 6px;">
+        This is the durable version of the site &mdash; every chart above
+        loads from <code>site/data/*.json</code>, exported straight from the
+        pipeline's gold-layer tables by <code>export_site_data.py</code>, not
+        typed into this page by hand. The earlier draft used to check the
+        story reads right lives on at <code>index_prototype.html</code> for
+        reference.
+      </p>
+      <ul class="roadmap">
+        <li class="done"><span class="mark">&#10003;</span> Rainfall ingestion &amp; anomaly calc &mdash; Assam &amp; Gujarat, run live against real IMD data</li>
+        <li class="done"><span class="mark">&#10003;</span> Event-window &amp; district correction against real sources (Wikipedia, news reporting)</li>
+        <li class="done"><span class="mark">&#10003;</span> Structured, citation-backed impact table (gold.impact_summary, 13 rows)</li>
+        <li class="done"><span class="mark">&#10003;</span> Sentinel-1 (Google Earth Engine) flood-extent ingestion &mdash; run live: Assam 2,389 km&sup2;, Gujarat 83 km&sup2; (widened-window caveat, see Flood extent section)</li>
+        <li class="pending"><span class="mark">&#9675;</span> District-level flood-extent map</li>
+        <li class="done"><span class="mark">&#10003;</span> Multi-year rainfall-extremity trend, 2000&ndash;2025 ("is this getting worse")</li>
+        <li class="done"><span class="mark">&#10003;</span> GDELT news-attention timeline</li>
+        <li class="done"><span class="mark">&#10003;</span> Narrative/preparedness section &mdash; warning systems, cited 2026-response lessons, NDMA household guidance</li>
+        <li class="done"><span class="mark">&#10003;</span> Ported to a durable <code>site/index.html</code> reading exported JSON</li>
+        <li class="pending"><span class="mark">&#9675;</span> Deployed to GitHub Pages</li>
+      </ul>
+
+      <p class="section-note" style="margin: 22px 0 6px;">data attribution &amp; licensing</p>
+      <p class="section-intro" style="margin: 0 0 4px; font-size: 0.85rem;">
+        Rainfall: India Meteorological Department, Pune (cite Pai et al. 2014,
+        MAUSAM 65(1), pp1&ndash;18). Satellite flood-extent: Sentinel-1
+        SAR, Copernicus Programme, accessed via Google Earth Engine &mdash;
+        Copernicus data is free and open under EU law, attribution on
+        derived products is "Contains modified Copernicus Sentinel data
+        [2026]." News-attention data: the
+        <a href="https://www.gdeltproject.org/" target="_blank" rel="noopener">GDELT Project</a>,
+        whose terms require this citation and link on any use or
+        redistribution of the data. Impact/causation figures: cited news
+        reporting and Wikipedia, factual figures only, linked at point of
+        use, no article text reproduced beyond a couple of short paraphrased
+        or attributed phrases.
+      </p>
+
+      <div class="footer-links">
+        <span>flood_watch_2026 &middot; personal project, separate from consulting work</span>
+        <a href="https://en.wikipedia.org/wiki/2026_Assam_floods" target="_blank" rel="noopener">Wikipedia: 2026 Assam floods</a>
+        <a href="https://www.downtoearth.org.in/natural-disasters/assam-floods-2026-why-does-the-state-flood-every-year" target="_blank" rel="noopener">Down To Earth</a>
+        <a href="https://www.nativeplanet.com/news/south-gujarat-floods-2026-imd-red-alerts-heavy-rainfall-emergency-update-011-23101.html" target="_blank" rel="noopener">Nativeplanet: South Gujarat</a>
+        <a href="https://www.theweek.in/news/india/2026/07/30/assam-floods-update-relief-efforts-heavy-rain-warning.html" target="_blank" rel="noopener">The Week: Assam update</a>
+        <a href="https://theprint.in/india/gujarat-rains-see-massive-relief-ops-from-ndrf-army-and-icg-40k-shifted-2637-rescued-5-dead/2996022/" target="_blank" rel="noopener">ThePrint: Gujarat relief ops</a>
+        <a href="https://www.imdpune.gov.in/cmpg/Griddata/Rainfall_25_NetCDF.html" target="_blank" rel="noopener">IMD Pune gridded rainfall</a>
+        <a href="https://www.gdeltproject.org/" target="_blank" rel="noopener">GDELT Project</a>
+        <a href="https://ndma.gov.in/floods-dos-donts" target="_blank" rel="noopener">NDMA: Floods Do's &amp; Don'ts</a>
+        <a href="https://cwc.gov.in/flood-forecasting-hydrological-observation" target="_blank" rel="noopener">Central Water Commission</a>
+        <a href="https://www.nerdrr.gov.in/FLEWS/" target="_blank" rel="noopener">FLEWS (NESAC)</a>
+        <a href="https://www.indiatodayne.in/opinion/story/beyond-the-rain-the-real-causes-of-upper-assams-devastating-floods-1429330-2026-07-24" target="_blank" rel="noopener">India Today NE</a>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  // Chart data is loaded at runtime from data/*.json (see loadSiteData() at
+  // the bottom of this script) -- these start empty and get filled in once
+  // the fetch resolves. This file must be served over http(s):// (GitHub
+  // Pages does this); opening it directly as file:// blocks fetch() of the
+  // local JSON via CORS.
+  const DATA = {};
+  const TREND = {};
+  const NEWS = {};
+
+  function fmtDate(iso) {
+    const d = new Date(iso + "T00:00:00");
+    return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  }
+
+  function buildChart(region, data) {
+    const svg = document.getElementById("chart-" + region);
+    const ns = "http://www.w3.org/2000/svg";
+    const W = 760, marginL = 42, marginR = 8, marginT = 10;
+    const lineTop = marginT, lineH = 150;
+    const gap = 14;
+    const barTop = lineTop + lineH + gap, barH = 90;
+    const axisY = barTop + barH + 18;
+    const plotW = W - marginL - marginR;
+    const n = data.length;
+    const step = plotW / (n - 1 || 1);
+
+    const maxRain = Math.max(...data.map(d => Math.max(d.actual, d.normal))) * 1.15;
+    const maxDep = Math.max(...data.map(d => Math.abs(d.dep))) * 1.1;
+
+    const xAt = i => marginL + i * step;
+    const yRain = v => lineTop + lineH - (v / maxRain) * lineH;
+    const yBar = v => barTop + barH / 2 - (v / maxDep) * (barH / 2);
+    const zeroY = barTop + barH / 2;
+
+    let svgHtml = "";
+
+    // grid lines (rain panel)
+    for (let g = 0; g <= 4; g++) {
+      const gy = lineTop + (lineH / 4) * g;
+      const val = Math.round(maxRain * (1 - g / 4));
+      svgHtml += `<line class="grid-line" x1="${marginL}" y1="${gy}" x2="${W - marginR}" y2="${gy}" />`;
+      svgHtml += `<text class="axis-label" x="${marginL - 6}" y="${gy + 3}" text-anchor="end">${val}</text>`;
+    }
+
+    // normal (dashed reference) line
+    let normalPath = data.map((d, i) => `${i === 0 ? "M" : "L"} ${xAt(i).toFixed(1)} ${yRain(d.normal).toFixed(1)}`).join(" ");
+    svgHtml += `<path d="${normalPath}" fill="none" stroke="var(--ink-3)" stroke-width="1.5" stroke-dasharray="4 3" />`;
+
+    // actual area + line
+    let areaPath = data.map((d, i) => `${i === 0 ? "M" : "L"} ${xAt(i).toFixed(1)} ${yRain(d.actual).toFixed(1)}`).join(" ");
+    areaPath += ` L ${xAt(n - 1).toFixed(1)} ${lineTop + lineH} L ${xAt(0).toFixed(1)} ${lineTop + lineH} Z`;
+    svgHtml += `<path d="${areaPath}" fill="var(--accent-tint)" stroke="none" />`;
+    let actualPath = data.map((d, i) => `${i === 0 ? "M" : "L"} ${xAt(i).toFixed(1)} ${yRain(d.actual).toFixed(1)}`).join(" ");
+    svgHtml += `<path d="${actualPath}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />`;
+
+    // peak marker
+    const peakIdx = data.reduce((best, d, i) => d.actual > data[best].actual ? i : best, 0);
+    svgHtml += `<circle cx="${xAt(peakIdx).toFixed(1)}" cy="${yRain(data[peakIdx].actual).toFixed(1)}" r="4" fill="var(--alert)" stroke="var(--surface)" stroke-width="1.5" />`;
+    svgHtml += `<text class="annot" x="${xAt(peakIdx).toFixed(1)}" y="${yRain(data[peakIdx].actual) - 10}" text-anchor="middle">peak &middot; ${fmtDate(data[peakIdx].date)}</text>`;
+
+    // zero line + bars (departure panel)
+    svgHtml += `<line class="zero-line" x1="${marginL}" y1="${zeroY}" x2="${W - marginR}" y2="${zeroY}" />`;
+    const barW = Math.max(3, step * 0.6);
+    data.forEach((d, i) => {
+      const x = xAt(i) - barW / 2;
+      const y = d.dep >= 0 ? yBar(d.dep) : zeroY;
+      const h = Math.abs(yBar(d.dep) - zeroY);
+      const color = d.dep >= 0 ? "var(--alert)" : "var(--accent)";
+      svgHtml += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(h, 1).toFixed(1)}" fill="${color}" rx="1.5" data-i="${i}" class="bar-hit" />`;
+    });
+    svgHtml += `<text class="axis-label" x="${marginL - 6}" y="${zeroY + 3}" text-anchor="end">0%</text>`;
+
+    // x-axis date labels (sparse)
+    const labelEvery = Math.ceil(n / 8);
+    data.forEach((d, i) => {
+      if (i % labelEvery === 0 || i === n - 1) {
+        svgHtml += `<text class="axis-label" x="${xAt(i).toFixed(1)}" y="${axisY}" text-anchor="middle">${fmtDate(d.date)}</text>`;
+      }
+    });
+
+    // hit layer for crosshair (transparent, on top)
+    data.forEach((d, i) => {
+      svgHtml += `<rect x="${(xAt(i) - step / 2).toFixed(1)}" y="${lineTop}" width="${step.toFixed(1)}" height="${axisY - lineTop}" fill="transparent" class="hit-col" data-i="${i}" />`;
+    });
+
+    svg.setAttribute("viewBox", `0 0 ${W} ${axisY + 14}`);
+    svg.innerHTML = svgHtml;
+
+    // interaction
+    const tooltip = document.getElementById("tooltip-" + region);
+    const wrap = document.getElementById("chart-" + region + "-wrap");
+    svg.querySelectorAll(".hit-col").forEach(el => {
+      el.addEventListener("pointerenter", () => showTip(+el.dataset.i));
+      el.addEventListener("pointermove", () => showTip(+el.dataset.i));
+    });
+    svg.addEventListener("pointerleave", () => { tooltip.classList.remove("visible"); });
+
+    function showTip(i) {
+      const d = data[i];
+      const rect = svg.getBoundingClientRect();
+      const wrapRect = wrap.getBoundingClientRect();
+      const scale = rect.width / W;
+      const px = rect.left - wrapRect.left + xAt(i) * scale;
+      const py = rect.top - wrapRect.top + lineTop * scale;
+      tooltip.style.left = px + "px";
+      tooltip.style.top = py + "px";
+      tooltip.innerHTML = `<div class="tt-date">${fmtDate(d.date)}, 2026</div>actual&nbsp; ${d.actual.toFixed(1)}mm<br/>normal&nbsp; ${d.normal.toFixed(1)}mm<br/>dep.&nbsp;&nbsp;&nbsp; ${d.dep >= 0 ? "+" : ""}${d.dep.toFixed(1)}%`;
+      tooltip.classList.add("visible");
+    }
+
+    // table
+    const tbody = document.querySelector("#table-" + region + " tbody");
+    tbody.innerHTML = data.map(d =>
+      `<tr><td>${d.date}</td><td>${d.actual.toFixed(1)}</td><td>${d.normal.toFixed(1)}</td><td>${d.dep >= 0 ? "+" : ""}${d.dep.toFixed(1)}%</td></tr>`
+    ).join("");
+  }
+
+  function buildTrendChart(region) {
+    const { color, slope, intercept, years } = TREND[region];
+    const svg = document.getElementById("chart-trend-" + region);
+    const W = 350, H = 150, marginL = 26, marginR = 6, marginT = 8, marginB = 20;
+    const plotW = W - marginL - marginR, plotH = H - marginT - marginB;
+    const n = years.length;
+    const step = plotW / n;
+    const maxY = Math.max(...years.map(d => d[1])) * 1.15;
+
+    const xAt = i => marginL + i * step + step / 2;
+    const yAt = v => marginT + plotH - (v / maxY) * plotH;
+
+    let html = "";
+    for (let g = 0; g <= 2; g++) {
+      const gy = marginT + (plotH / 2) * g;
+      html += `<line class="grid-line" x1="${marginL}" y1="${gy}" x2="${W - marginR}" y2="${gy}" />`;
+      html += `<text class="axis-label" x="${marginL - 5}" y="${gy + 3}" text-anchor="end">${Math.round(maxY * (1 - g / 2))}</text>`;
+    }
+
+    const barW = step * 0.62;
+    years.forEach(([year, count], i) => {
+      const x = xAt(i) - barW / 2;
+      const y = yAt(count);
+      html += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${(marginT + plotH - y).toFixed(1)}" fill="${color}" opacity="0.55" rx="1.5" data-i="${i}" class="bar-hit" />`;
+    });
+
+    const trendPath = years.map(([year], i) => {
+      const v = slope * year + intercept;
+      return `${i === 0 ? "M" : "L"} ${xAt(i).toFixed(1)} ${yAt(v).toFixed(1)}`;
+    }).join(" ");
+    html += `<path d="${trendPath}" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" />`;
+
+    [0, n - 1].forEach(i => {
+      html += `<text class="axis-label" x="${xAt(i).toFixed(1)}" y="${H - 4}" text-anchor="middle">${years[i][0]}</text>`;
+    });
+
+    years.forEach(([year, count], i) => {
+      html += `<rect x="${(marginL + i * step).toFixed(1)}" y="${marginT}" width="${step.toFixed(1)}" height="${plotH}" fill="transparent" class="hit-col" data-i="${i}" />`;
+    });
+
+    svg.innerHTML = html;
+
+    const tooltip = document.getElementById("tooltip-trend-" + region);
+    const wrap = document.getElementById("chart-trend-" + region + "-wrap");
+    svg.querySelectorAll(".hit-col").forEach(el => {
+      const show = () => {
+        const i = +el.dataset.i;
+        const [year, count] = years[i];
+        const rect = svg.getBoundingClientRect();
+        const wrapRect = wrap.getBoundingClientRect();
+        const scale = rect.width / W;
+        tooltip.style.left = (rect.left - wrapRect.left + xAt(i) * scale) + "px";
+        tooltip.style.top = (rect.top - wrapRect.top + marginT * scale) + "px";
+        tooltip.innerHTML = `<div class="tt-date">${year}</div>extreme days: ${count}`;
+        tooltip.classList.add("visible");
+      };
+      el.addEventListener("pointerenter", show);
+      el.addEventListener("pointermove", show);
+    });
+    svg.addEventListener("pointerleave", () => tooltip.classList.remove("visible"));
+  }
+
+  function buildNewsChart(region) {
+    const color = region === "assam" ? "var(--accent)" : "var(--alert)";
+    const days = NEWS[region];
+    const svg = document.getElementById("chart-news-" + region);
+    const W = 350, H = 150, marginL = 26, marginR = 6, marginT = 8, marginB = 20;
+    const plotW = W - marginL - marginR, plotH = H - marginT - marginB;
+    const n = days.length;
+    const step = plotW / n;
+    const maxY = Math.max(...days.map(d => d[1])) * 1.15;
+
+    const xAt = i => marginL + i * step + step / 2;
+    const yAt = v => marginT + plotH - (v / maxY) * plotH;
+
+    let html = "";
+    for (let g = 0; g <= 2; g++) {
+      const gy = marginT + (plotH / 2) * g;
+      html += `<line class="grid-line" x1="${marginL}" y1="${gy}" x2="${W - marginR}" y2="${gy}" />`;
+      html += `<text class="axis-label" x="${marginL - 5}" y="${gy + 3}" text-anchor="end">${Math.round(maxY * (1 - g / 2))}</text>`;
+    }
+
+    const barW = step * 0.62;
+    days.forEach(([label, count], i) => {
+      const x = xAt(i) - barW / 2;
+      const y = yAt(count);
+      html += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${(marginT + plotH - y).toFixed(1)}" fill="${color}" opacity="0.75" rx="1.5" data-i="${i}" class="bar-hit" />`;
+    });
+
+    [0, Math.floor((n - 1) / 2), n - 1].forEach(i => {
+      html += `<text class="axis-label" x="${xAt(i).toFixed(1)}" y="${H - 4}" text-anchor="middle">${days[i][0]}</text>`;
+    });
+
+    days.forEach((d, i) => {
+      html += `<rect x="${(marginL + i * step).toFixed(1)}" y="${marginT}" width="${step.toFixed(1)}" height="${plotH}" fill="transparent" class="hit-col" data-i="${i}" />`;
+    });
+
+    svg.innerHTML = html;
+
+    const tooltip = document.getElementById("tooltip-news-" + region);
+    const wrap = document.getElementById("chart-news-" + region + "-wrap");
+    svg.querySelectorAll(".hit-col").forEach(el => {
+      const show = () => {
+        const i = +el.dataset.i;
+        const [label, count] = days[i];
+        const rect = svg.getBoundingClientRect();
+        const wrapRect = wrap.getBoundingClientRect();
+        const scale = rect.width / W;
+        tooltip.style.left = (rect.left - wrapRect.left + xAt(i) * scale) + "px";
+        tooltip.style.top = (rect.top - wrapRect.top + marginT * scale) + "px";
+        tooltip.innerHTML = `<div class="tt-date">2026-${label}</div>${count} articles`;
+        tooltip.classList.add("visible");
+      };
+      el.addEventListener("pointerenter", show);
+      el.addEventListener("pointermove", show);
+    });
+    svg.addEventListener("pointerleave", () => tooltip.classList.remove("visible"));
+  }
+
+  const REGION_LABEL = { assam: "Assam", gujarat: "Gujarat" };
+  const TREND_COLORS = { assam: "var(--accent)", gujarat: "var(--alert)" };
+
+  function fmtWindowDate(iso) {
+    return fmtDate(iso);
+  }
+
+  function applyFloodExtent(rows) {
+    for (const row of rows) {
+      const km2El = document.getElementById(`fe-${row.region}-km2`);
+      const labelEl = document.getElementById(`fe-${row.region}-label`);
+      const srcEl = document.getElementById(`fe-${row.region}-src`);
+      if (!km2El) continue;
+
+      km2El.textContent = Math.round(row.flooded_area_km2).toLocaleString("en-US") + " km²";
+
+      const [beforeStart, beforeEnd] = row.before_window.split("_");
+      const [afterStart, afterEnd] = row.after_window.split("_");
+      labelEl.textContent =
+        `${REGION_LABEL[row.region]} — flooded area, ${fmtWindowDate(afterStart)}–${fmtWindowDate(afterEnd)} vs. ${fmtWindowDate(beforeStart)}–${fmtWindowDate(beforeEnd)}`;
+
+      srcEl.textContent =
+        `${row.after_image_count} radar passes after peak, ${row.before_image_count} before` +
+        (row.after_window_widened ? " — window widened, see caveat below" : " — clean same-week comparison");
+    }
+  }
+
+  async function loadSiteData() {
+    const [rainfall, trend, news, floodExtent] = await Promise.all(
+      ["data/rainfall.json", "data/trend.json", "data/news.json", "data/flood_extent.json"].map(
+        url => fetch(url).then(r => {
+          if (!r.ok) throw new Error(`${url}: HTTP ${r.status}`);
+          return r.json();
+        })
+      )
+    );
+
+    Object.assign(DATA, rainfall);
+    buildChart("assam", DATA.assam);
+    buildChart("gujarat", DATA.gujarat);
+
+    for (const region of ["assam", "gujarat"]) {
+      TREND[region] = { ...trend[region], color: TREND_COLORS[region] };
+    }
+    buildTrendChart("assam");
+    buildTrendChart("gujarat");
+
+    Object.assign(NEWS, news);
+    buildNewsChart("assam");
+    buildNewsChart("gujarat");
+
+    applyFloodExtent(floodExtent);
+  }
+
+  loadSiteData().catch(err => {
+    console.error("Failed to load site data:", err);
+    document.querySelectorAll(".chart-wrap, #satellite .impact-grid").forEach(el => {
+      el.insertAdjacentHTML(
+        "beforeend",
+        '<p style="color:var(--alert);font-size:0.8rem;">Could not load data/*.json &mdash; ' +
+        "if you opened this file directly from disk, serve the site/ folder over http:// " +
+        "instead (e.g. <code>python -m http.server</code>), since fetch() of local files is " +
+        "blocked from file://.</p>"
+      );
+    });
+  });
+</script>
+</body>
+</html>

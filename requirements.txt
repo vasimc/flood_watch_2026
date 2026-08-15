@@ -1,0 +1,12 @@
+requests
+python-dotenv
+duckdb
+pandas
+pyarrow
+rasterio
+rioxarray
+xarray
+netCDF4
+matplotlib
+earthengine-api
+pytest

@@ -1,0 +1,24 @@
+[
+  {
+    "region": "assam",
+    "peak_date": "2026-07-20",
+    "before_window": "2026-06-20_2026-07-05",
+    "after_window": "2026-07-17_2026-07-23",
+    "before_image_count": 20,
+    "after_image_count": 6,
+    "before_window_widened": false,
+    "after_window_widened": false,
+    "flooded_area_km2": 2389.1
+  },
+  {
+    "region": "gujarat",
+    "peak_date": "2026-07-24",
+    "before_window": "2026-06-24_2026-07-09",
+    "after_window": "2026-07-21_2026-08-03",
+    "before_image_count": 4,
+    "after_image_count": 2,
+    "before_window_widened": false,
+    "after_window_widened": true,
+    "flooded_area_km2": 83.2
+  }
+]
