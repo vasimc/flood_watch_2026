@@ -7,7 +7,8 @@
     "as_of_date": "2026-07-30",
     "source_org": "The Week",
     "source_url": "https://www.theweek.in/news/india/2026/07/30/assam-floods-update-relief-efforts-heavy-rain-warning.html",
-    "note": ""
+    "note": "",
+    "is_estimate": false
   },
   {
     "region": "assam",
@@ -17,7 +18,8 @@
     "as_of_date": "2026-07-30",
     "source_org": "The Week",
     "source_url": "https://www.theweek.in/news/india/2026/07/30/assam-floods-update-relief-efforts-heavy-rain-warning.html",
-    "note": "reported as 'over 3 lakh'"
+    "note": "",
+    "is_estimate": true
   },
   {
     "region": "assam",
@@ -27,7 +29,8 @@
     "as_of_date": "2026-07-30",
     "source_org": "The Week",
     "source_url": "https://www.theweek.in/news/india/2026/07/30/assam-floods-update-relief-efforts-heavy-rain-warning.html",
-    "note": "sheltering 16,500+ displaced people"
+    "note": "sheltering 16,500+ displaced people",
+    "is_estimate": false
   },
   {
     "region": "assam",
@@ -37,7 +40,8 @@
     "as_of_date": "2026-07-30",
     "source_org": "The Week",
     "source_url": "https://www.theweek.in/news/india/2026/07/30/assam-floods-update-relief-efforts-heavy-rain-warning.html",
-    "note": "assisting 72,000+ people"
+    "note": "assisting 72,000+ people",
+    "is_estimate": false
   },
   {
     "region": "assam",
@@ -47,7 +51,8 @@
     "as_of_date": "2026-07-30",
     "source_org": "The Week",
     "source_url": "https://www.theweek.in/news/india/2026/07/30/assam-floods-update-relief-efforts-heavy-rain-warning.html",
-    "note": "described as 'more than'"
+    "note": "",
+    "is_estimate": true
   },
   {
     "region": "assam",
@@ -57,7 +62,8 @@
     "as_of_date": "2026-07-30",
     "source_org": "The Week",
     "source_url": "https://www.theweek.in/news/india/2026/07/30/assam-floods-update-relief-efforts-heavy-rain-warning.html",
-    "note": "17,000 additional head of livestock affected (non-fatal)"
+    "note": "17,000 additional head of livestock affected (non-fatal)",
+    "is_estimate": false
   },
   {
     "region": "assam",
@@ -67,7 +73,8 @@
     "as_of_date": "2026-07-30",
     "source_org": "The Week",
     "source_url": "https://www.theweek.in/news/india/2026/07/30/assam-floods-update-relief-efforts-heavy-rain-warning.html",
-    "note": "Charaideo district"
+    "note": "Charaideo district",
+    "is_estimate": false
   },
   {
     "region": "assam",
@@ -77,7 +84,8 @@
     "as_of_date": "2026-08-04",
     "source_org": "Wikipedia (2026 Assam floods)",
     "source_url": "https://en.wikipedia.org/wiki/2026_Assam_floods",
-    "note": ""
+    "note": "",
+    "is_estimate": false
   },
   {
     "region": "assam",
@@ -87,7 +95,8 @@
     "as_of_date": "2026-08-04",
     "source_org": "Wikipedia (2026 Assam floods)",
     "source_url": "https://en.wikipedia.org/wiki/2026_Assam_floods",
-    "note": "reported as 'more than 1 lakh people still remained affected' -- distinct metric from the 2026-07-30 cumulative people_affected figure, not directly comparable"
+    "note": "distinct metric from the 2026-07-30 cumulative people_affected figure, not directly comparable",
+    "is_estimate": true
   },
   {
     "region": "gujarat",
@@ -97,7 +106,8 @@
     "as_of_date": "2026-07-24",
     "source_org": "ThePrint",
     "source_url": "https://theprint.in/india/gujarat-rains-see-massive-relief-ops-from-ndrf-army-and-icg-40k-shifted-2637-rescued-5-dead/2996022/",
-    "note": "rain-related deaths across Tapi, Valsad, Anand, Mehsana, Panchmahal districts"
+    "note": "rain-related deaths across Tapi, Valsad, Anand, Mehsana, Panchmahal districts",
+    "is_estimate": false
   },
   {
     "region": "gujarat",
@@ -107,7 +117,8 @@
     "as_of_date": "2026-07-24",
     "source_org": "ThePrint",
     "source_url": "https://theprint.in/india/gujarat-rains-see-massive-relief-ops-from-ndrf-army-and-icg-40k-shifted-2637-rescued-5-dead/2996022/",
-    "note": ""
+    "note": "",
+    "is_estimate": true
   },
   {
     "region": "gujarat",
@@ -117,7 +128,8 @@
     "as_of_date": "2026-07-24",
     "source_org": "ThePrint",
     "source_url": "https://theprint.in/india/gujarat-rains-see-massive-relief-ops-from-ndrf-army-and-icg-40k-shifted-2637-rescued-5-dead/2996022/",
-    "note": ""
+    "note": "",
+    "is_estimate": false
   },
   {
     "region": "gujarat",
@@ -127,6 +139,7 @@
     "as_of_date": "2026-07-24",
     "source_org": "ANI News",
     "source_url": "https://www.aninews.in/news/national/general-news/ndrf-rescues-67-people-from-floodwaters-in-gujarats-navsari-operation-underway20260724093308/",
-    "note": "NDRF rescue from Sarikhurad village, Navsari district -- illustrative single-village figure, not a district/state total"
+    "note": "NDRF rescue from Sarikhurad village, Navsari district -- illustrative single-village figure, not a district/state total",
+    "is_estimate": false
   }
 ]

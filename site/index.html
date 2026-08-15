@@ -667,14 +667,6 @@
     marker-end: url(#arch-arrow);
   }
 
-  .arch-diagram .flow.bypass { stroke-dasharray: 3 3; }
-
-  .arch-diagram .flow-label {
-    font-family: var(--mono);
-    font-size: 9px;
-    fill: var(--ink-3);
-  }
-
   .arch-caption {
     font-size: 0.85rem;
     color: var(--ink-2);
@@ -987,8 +979,11 @@
         Still not found with a verified citation: Gujarat relief-camp counts and
         crop/hectare damage figures, and a confirmed embankment-breach or
         dam-release event for Assam with its own citation. Left out rather than
-        guessed. Every figure above traces to <code>gold.impact_summary</code>
-        (13 rows, built 2026-08-14) &mdash; not hand-typed onto this page.
+        guessed. Every figure above traces through <code>bronze.impact_reports</code>
+        (raw quote as reported) &rarr; <code>silver.impact_summary</code> (estimate
+        flag, e.g. the "+" figures above, derived from the actual wording) &rarr;
+        <code>gold.impact_summary</code> (13 deduped, validated rows) &mdash; not
+        hand-typed onto this page.
       </div>
     </div>
   </section>
@@ -1080,7 +1075,9 @@
       <a href="https://www.gdeltproject.org/" target="_blank" rel="noopener">GDELT Project</a>'s
       DOC 2.0 API. This is an attention signal, not a ground-truth source &mdash;
       shown here purely to see whether coverage tracked the physical event or
-      lagged it.
+      lagged it. The lag numbers below are a real gold-layer table
+      (<code>gold.news_attention</code>: peak-coverage day vs. the
+      independently-computed rainfall peak day), not read off the chart by eye.
     </p>
     <div class="trend-grid">
       <div class="trend-card">
@@ -1091,9 +1088,10 @@
         </div>
         <p class="trend-read">
           Coverage stayed <b>elevated and grew through early August</b> rather
-          than spiking once at the Jul 19&ndash;22 cloudburst &mdash; tracking the
-          rising death toll (68 on Jul 26 &rarr; 85 on Aug 4) more than the
-          initial weather event itself.
+          than spiking once at the Jul 19&ndash;22 cloudburst, actually peaking
+          <span id="news-lag-assam">&hellip;</span> &mdash;
+          tracking the rising death toll (68 on Jul 26 &rarr; 85 on Aug 4) more
+          than the initial weather event itself.
         </p>
       </div>
       <div class="trend-card">
@@ -1103,8 +1101,8 @@
           <div class="tooltip" id="tooltip-news-gujarat"></div>
         </div>
         <p class="trend-read">
-          Coverage peaked <b>Jul 23, one day before</b> the rainfall peak
-          (Jul 24) &mdash; consistent with IMD's red alerts driving anticipatory
+          Coverage peaked <span id="news-lag-gujarat">&hellip;</span>
+          &mdash; consistent with IMD's red alerts driving anticipatory
           coverage ahead of Valsad's actual deluge.
         </p>
       </div>
@@ -1231,112 +1229,145 @@
   <section id="architecture">
     <div class="section-head">
       <h2 class="section-title">How this was built</h2>
-      <div class="section-note">bronze / gold Parquet &middot; DuckDB &middot; static JSON</div>
+      <div class="section-note">bronze / silver / gold Parquet &middot; DuckDB &middot; static JSON</div>
     </div>
     <p class="section-intro">
-      Not every source takes the same path. Rainfall lands raw first and gets
-      transformed twice; satellite and the manual impact figures compute
-      their gold table directly, with no raw layer in between; GDELT never
-      gets a gold table at all &mdash; it's read straight from its raw pull.
-      The diagram below shows the real, divergent routes, not an idealized
-      one-size-fits-all ETL.
+      All four sources flow through the same three real, persisted layers
+      &mdash; bronze (the literal raw fact: an IMD grid cell, a Sentinel-1
+      pass, a GDELT count, a hand-transcribed quote), silver (one genuine
+      derived step per source), gold (the story-ready table this site
+      actually reads). Nothing here is relabeled for consistency's sake;
+      each silver step below does real, different work.
     </p>
     <figure class="arch-figure">
-      <svg class="arch-diagram" viewBox="0 0 940 480" role="img" aria-label="Four data sources feed this pipeline through different paths: IMD rainfall goes raw-then-transformed into two gold tables, Sentinel-1 satellite and manually-extracted impact figures write their gold tables directly with no raw layer, and GDELT skips the gold layer entirely. export_site_data.py turns the gold layer (plus GDELT's raw data) into the JSON the live site fetches, redeployed by GitHub Actions on every push.">
+      <svg class="arch-diagram" viewBox="0 0 960 460" role="img" aria-label="All four data sources flow through the same three layers: bronze (raw facts -- IMD grid cells, Sentinel-1 passes, GDELT counts, hand-transcribed quotes), silver (one real derived step per source -- daily-mean and monthly-normal calc, pixel classification, 3-day rolling average, estimate-flag parsing), and gold (the story-ready tables the site reads). All four gold outputs converge into export_site_data.py, which writes the JSON this page fetches at runtime, redeployed by GitHub Actions on every push.">
         <defs>
           <marker id="arch-arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
             <path d="M0,0 L10,5 L0,10 z" fill="var(--ink-3)" />
           </marker>
         </defs>
 
-        <text class="col-head" x="89" y="18" text-anchor="middle">SOURCES</text>
-        <text class="col-head" x="270" y="18" text-anchor="middle">BRONZE (raw)</text>
-        <text class="col-head" x="475" y="18" text-anchor="middle">GOLD (story-ready)</text>
-        <text class="col-head" x="700" y="18" text-anchor="middle">EXPORT</text>
-        <text class="col-head" x="873" y="18" text-anchor="middle">SITE</text>
+        <text class="col-head" x="78" y="18" text-anchor="middle">SOURCE</text>
+        <text class="col-head" x="226" y="18" text-anchor="middle">BRONZE</text>
+        <text class="col-head" x="364" y="18" text-anchor="middle">SILVER</text>
+        <text class="col-head" x="513" y="18" text-anchor="middle">GOLD</text>
+        <text class="col-head" x="720" y="18" text-anchor="middle">EXPORT</text>
+        <text class="col-head" x="880" y="18" text-anchor="middle">SITE</text>
 
-        <!-- source boxes -->
-        <rect class="box" x="14" y="77" width="150" height="56" rx="8" />
-        <circle class="dot automated" cx="26" cy="89" r="3" />
-        <text class="tag automated" x="34" y="92">AUTOMATED</text>
-        <text class="box-title" x="26" y="110">IMD Pune</text>
-        <text class="box-sub" x="26" y="123">gridded rainfall, 0.25&deg;</text>
+        <!-- row 1: rainfall -->
+        <rect class="box" x="14" y="70" width="128" height="50" rx="7" />
+        <circle class="dot automated" cx="25" cy="81" r="3" />
+        <text class="tag automated" x="33" y="84">AUTOMATED</text>
+        <text class="box-title" x="25" y="101">IMD Pune</text>
+        <text class="box-sub" x="25" y="113">0.25&deg; rainfall grid</text>
 
-        <rect class="box" x="14" y="167" width="150" height="56" rx="8" />
-        <circle class="dot automated" cx="26" cy="179" r="3" />
-        <text class="tag automated" x="34" y="182">AUTOMATED</text>
-        <text class="box-title" x="26" y="200">Sentinel-1</text>
-        <text class="box-sub" x="26" y="213">via Google Earth Engine</text>
+        <rect class="box" x="172" y="70" width="108" height="50" rx="7" />
+        <text class="box-title" x="183" y="99">rainfall_imd</text>
 
-        <rect class="box" x="14" y="257" width="150" height="56" rx="8" />
-        <circle class="dot automated" cx="26" cy="269" r="3" />
-        <text class="tag automated" x="34" y="272">AUTOMATED</text>
-        <text class="box-title" x="26" y="290">GDELT</text>
-        <text class="box-sub" x="26" y="303">news-volume timeline</text>
+        <rect class="box" x="310" y="70" width="108" height="50" rx="7" />
+        <text class="box-title" x="321" y="93">daily_mean</text>
+        <text class="box-sub" x="321" y="105">+ monthly normal</text>
 
-        <rect class="box" x="14" y="347" width="150" height="56" rx="8" />
-        <circle class="dot manual" cx="26" cy="359" r="3" />
-        <text class="tag manual" x="34" y="362">MANUAL</text>
-        <text class="box-title" x="26" y="380">News + Wikipedia</text>
-        <text class="box-sub" x="26" y="393">impact/causation reports</text>
+        <rect class="box gold" x="448" y="70" width="130" height="50" rx="7" />
+        <text class="gold-item" x="459" y="91">rainfall_anomaly</text>
+        <text class="gold-item" x="459" y="105">historical_freq</text>
 
-        <!-- bronze boxes (rainfall + gdelt only) -->
-        <rect class="box" x="210" y="77" width="120" height="56" rx="8" />
-        <text class="box-title" x="222" y="100">bronze/</text>
-        <text class="box-sub" x="222" y="115">rainfall_imd</text>
+        <!-- row 2: satellite -->
+        <rect class="box" x="14" y="160" width="128" height="50" rx="7" />
+        <circle class="dot automated" cx="25" cy="171" r="3" />
+        <text class="tag automated" x="33" y="174">AUTOMATED</text>
+        <text class="box-title" x="25" y="191">Sentinel-1</text>
+        <text class="box-sub" x="25" y="203">via Google Earth Engine</text>
 
-        <rect class="box" x="210" y="257" width="120" height="56" rx="8" />
-        <text class="box-title" x="222" y="280">bronze/</text>
-        <text class="box-sub" x="222" y="295">gdelt_news</text>
+        <rect class="box" x="172" y="160" width="108" height="50" rx="7" />
+        <text class="box-title" x="183" y="185">satellite_gee</text>
+        <text class="box-sub" x="183" y="197">passes (32 rows)</text>
 
-        <!-- gold box (single merged layer, 4 tables land here from 3 different paths) -->
-        <rect class="box gold" x="390" y="70" width="170" height="340" rx="8" />
-        <text class="box-sub" x="402" y="92">gold/*.parquet</text>
-        <text class="gold-item" x="402" y="118">rainfall_anomaly</text>
-        <text class="gold-item" x="402" y="136">historical_frequency</text>
-        <text class="gold-item" x="402" y="234">flood_extent_gee</text>
-        <text class="gold-item" x="402" y="344">impact_summary</text>
+        <rect class="box" x="310" y="160" width="108" height="50" rx="7" />
+        <text class="box-title" x="321" y="185">pixel_class.</text>
+        <text class="box-sub" x="321" y="197">SAR ratio &gt; 1.25</text>
 
-        <!-- export + site -->
-        <rect class="box" x="630" y="197" width="140" height="56" rx="8" />
-        <text class="box-title" x="642" y="220">export_site_data.py</text>
-        <text class="box-sub" x="642" y="235">gold &rarr; JSON</text>
+        <rect class="box gold" x="448" y="160" width="130" height="50" rx="7" />
+        <text class="gold-item" x="459" y="189">flood_extent_gee</text>
 
-        <rect class="box" x="820" y="197" width="106" height="56" rx="8" />
-        <text class="box-title" x="832" y="220">index.html</text>
-        <text class="box-sub" x="832" y="235">GitHub Pages</text>
+        <!-- row 3: GDELT -->
+        <rect class="box" x="14" y="250" width="128" height="50" rx="7" />
+        <circle class="dot automated" cx="25" cy="261" r="3" />
+        <text class="tag automated" x="33" y="264">AUTOMATED</text>
+        <text class="box-title" x="25" y="281">GDELT</text>
+        <text class="box-sub" x="25" y="293">news-volume timeline</text>
 
-        <!-- flows -->
-        <path class="flow" d="M164,105 L210,105" />
+        <rect class="box" x="172" y="250" width="108" height="50" rx="7" />
+        <text class="box-title" x="183" y="279">gdelt_news</text>
 
-        <path class="flow" d="M330,105 L390,122" />
-        <text class="flow-label" x="340" y="58">anomaly calc, 26yr trend</text>
+        <rect class="box" x="310" y="250" width="108" height="50" rx="7" />
+        <text class="box-title" x="321" y="275">3-day</text>
+        <text class="box-sub" x="321" y="287">rolling avg</text>
 
-        <path class="flow" d="M164,195 L390,232" />
-        <text class="flow-label" x="200" y="188">SAR change-detection, computed in GEE</text>
+        <rect class="box gold" x="448" y="250" width="130" height="50" rx="7" />
+        <text class="gold-item" x="459" y="279">news_attention</text>
 
-        <path class="flow" d="M164,285 L210,285" />
+        <!-- row 4: manual impact reports -->
+        <rect class="box" x="14" y="340" width="128" height="50" rx="7" />
+        <circle class="dot manual" cx="25" cy="351" r="3" />
+        <text class="tag manual" x="33" y="354">MANUAL</text>
+        <text class="box-title" x="25" y="371">News + Wikipedia</text>
+        <text class="box-sub" x="25" y="383">impact/causation</text>
 
-        <path class="flow" d="M164,375 L390,342" />
-        <text class="flow-label" x="200" y="362">hand-extracted, cited</text>
+        <rect class="box" x="172" y="340" width="108" height="50" rx="7" />
+        <text class="box-title" x="183" y="365">impact_reports</text>
+        <text class="box-sub" x="183" y="377">raw quote + value</text>
 
-        <path class="flow bypass" d="M330,285 L360,285 L360,450 L700,450 L700,253" />
-        <text class="flow-label" x="365" y="463">GDELT read directly &mdash; no gold table</text>
+        <rect class="box" x="310" y="340" width="108" height="50" rx="7" />
+        <text class="box-title" x="321" y="365">typed +</text>
+        <text class="box-sub" x="321" y="377">is_estimate flag</text>
 
-        <path class="flow" d="M560,225 L630,225" />
+        <rect class="box gold" x="448" y="340" width="130" height="50" rx="7" />
+        <text class="gold-item" x="459" y="369">impact_summary</text>
 
-        <path class="flow" d="M770,225 L820,225" />
+        <!-- export + site (converge from all 4 gold boxes) -->
+        <rect class="box" x="650" y="180" width="140" height="60" rx="7" />
+        <text class="box-title" x="661" y="205">export_site_data.py</text>
+        <text class="box-sub" x="661" y="220">gold &rarr; JSON</text>
+
+        <rect class="box" x="830" y="180" width="100" height="60" rx="7" />
+        <text class="box-title" x="841" y="205">index.html</text>
+        <text class="box-sub" x="841" y="220">GitHub Pages</text>
+
+        <!-- flows: straight through each lane -->
+        <path class="flow" d="M142,95 L172,95" />
+        <path class="flow" d="M280,95 L310,95" />
+        <path class="flow" d="M418,95 L448,95" />
+
+        <path class="flow" d="M142,185 L172,185" />
+        <path class="flow" d="M280,185 L310,185" />
+        <path class="flow" d="M418,185 L448,185" />
+
+        <path class="flow" d="M142,275 L172,275" />
+        <path class="flow" d="M280,275 L310,275" />
+        <path class="flow" d="M418,275 L448,275" />
+
+        <path class="flow" d="M142,365 L172,365" />
+        <path class="flow" d="M280,365 L310,365" />
+        <path class="flow" d="M418,365 L448,365" />
+
+        <!-- convergence into export -->
+        <path class="flow" d="M578,95 L650,210" />
+        <path class="flow" d="M578,185 L650,210" />
+        <path class="flow" d="M578,275 L650,210" />
+        <path class="flow" d="M578,365 L650,210" />
+
+        <path class="flow" d="M790,210 L830,210" />
       </svg>
       <figcaption class="arch-caption">
-        Four real sources, three different routes into the gold layer &mdash;
-        rainfall is transformed twice, satellite and manual impact figures
-        skip straight to gold since there's no meaningful raw layer for a
-        Sentinel-1 computation result or a hand-read news figure, and GDELT
-        skips gold entirely since a raw article-count series needs no
-        further transformation. <code>export_site_data.py</code> turns the
-        gold layer into the JSON this page fetches at runtime; a GitHub
-        Actions workflow redeploys the whole <code>site/</code> folder on
-        every push that touches it.
+        Every source lands a real raw fact in bronze, gets one genuine
+        derived step in silver (a daily-mean/normal calc, a radar pixel
+        classification, a rolling average, an estimate-text parse &mdash;
+        four different transforms, not four copies of the same one), and
+        produces a story-ready gold table. All four gold outputs converge
+        into <code>export_site_data.py</code>, which writes the JSON this
+        page fetches at runtime; a GitHub Actions workflow redeploys the
+        whole <code>site/</code> folder on every push that touches it.
       </figcaption>
     </figure>
   </section>
@@ -1664,9 +1695,22 @@
     }
   }
 
+  function applyNewsAttention(rows) {
+    for (const row of rows) {
+      const el = document.getElementById(`news-lag-${row.region}`);
+      if (!el) continue;
+      const lag = row.lag_days;
+      const lagPhrase =
+        lag === 0 ? "the same day as the rainfall peak"
+        : lag < 0 ? `${Math.abs(lag)} day${Math.abs(lag) === 1 ? "" : "s"} before the rainfall peak (${fmtDate(row.rainfall_peak_date)})`
+        : `${lag} day${lag === 1 ? "" : "s"} after the rainfall peak`;
+      el.textContent = `${fmtDate(row.peak_date)} (${row.peak_article_count} articles) — ${lagPhrase}`;
+    }
+  }
+
   async function loadSiteData() {
-    const [rainfall, trend, news, floodExtent] = await Promise.all(
-      ["data/rainfall.json", "data/trend.json", "data/news.json", "data/flood_extent.json"].map(
+    const [rainfall, trend, news, newsAttention, floodExtent] = await Promise.all(
+      ["data/rainfall.json", "data/trend.json", "data/news.json", "data/news_attention.json", "data/flood_extent.json"].map(
         url => fetch(url).then(r => {
           if (!r.ok) throw new Error(`${url}: HTTP ${r.status}`);
           return r.json();
@@ -1687,6 +1731,7 @@
     Object.assign(NEWS, news);
     buildNewsChart("assam");
     buildNewsChart("gujarat");
+    applyNewsAttention(newsAttention);
 
     applyFloodExtent(floodExtent);
   }

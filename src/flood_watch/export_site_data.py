@@ -101,6 +101,21 @@ def export_impact() -> list:
             "source_org": row.source_org,
             "source_url": row.source_url,
             "note": row.note or "",
+            "is_estimate": bool(row.is_estimate),
+        }
+        for row in df.itertuples()
+    ]
+
+
+def export_news_attention() -> list:
+    df = pd.read_parquet(DATA_DIR / "gold" / "news_attention.parquet")
+    return [
+        {
+            "region": row.region,
+            "peak_date": row.peak_date,
+            "peak_article_count": int(row.peak_article_count),
+            "rainfall_peak_date": row.rainfall_peak_date,
+            "lag_days": int(row.lag_days),
         }
         for row in df.itertuples()
     ]
@@ -112,6 +127,7 @@ def export_all() -> None:
         "rainfall.json": export_rainfall(),
         "trend.json": export_trend(),
         "news.json": export_news(),
+        "news_attention.json": export_news_attention(),
         "flood_extent.json": export_flood_extent(),
         "impact.json": export_impact(),
     }

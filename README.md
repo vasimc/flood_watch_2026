@@ -65,30 +65,38 @@ Column glossary (gold layer, added as tables land):
 | `gold.rainfall_anomaly_timeline` | `pct_departure` | % actual rainfall vs. historical normal for that district/date |
 | `gold.historical_frequency` | `extreme_day_count` | monsoon days/year exceeding 2x the 26-year monsoon-day mean, per region |
 | `gold.flood_extent_gee` | `flooded_area_km2` | flooded area from Sentinel-1 SAR before/after ratio change detection |
-| `gold.impact_summary` | `source_url` | citation for every impact/causation figure (Tier B) |
+| `gold.news_attention` | `lag_days` | days between peak news coverage and the independently-computed rainfall peak (negative = anticipatory) |
+| `gold.impact_summary` | `source_url` | citation for every impact/causation figure (Tier B); `is_estimate` flags floor/approximation figures (e.g. "over 3 lakh") vs. exact counts |
 
 ## Architecture
 
+A live, rendered version of this diagram (with real table names and row
+counts) is on the site itself, in the "How this was built" section:
+https://vasimc.github.io/flood_watch_2026/#architecture
+
+All four sources flow through the same three real, persisted layers --
+one genuinely different transform per source in silver, not four copies
+of the same relabeled step:
+
 ```
-Sentinel-1 (via GEE) --+
-NASA LANCE (GeoTIFF)   +
-IMD CDSP (NetCDF)      +--> BRONZE (raw, as-received, Parquet)
-GDELT (JSON)           +
-ReliefWeb/SEOC (PDF) --+        [manual retrieval + structured extraction]
-                                    |
-                                    v
-                    +----------------------------+
-                    |   SILVER  (silver_*.py)    |  district-level aggregation,
-                    |                            |  rainfall anomaly vs. normal,
-                    |                            |  flood-extent by district/date
-                    +----------------------------+
-                                    |
-                                    v
-                    +----------------------------+
-                    |   GOLD    (gold_metrics.py)|  story-ready joined tables
-                    +----------------------------+
-                                    |
-                                    v
+SOURCE                BRONZE (raw)        SILVER (one real transform)      GOLD (story-ready)
+-----------------     ----------------    ------------------------------   -----------------------
+IMD Pune (rainfall) -> rainfall_imd    -> daily_mean + monthly normal   -> rainfall_anomaly_timeline
+                                                                            historical_frequency
+Sentinel-1 (GEE)    -> satellite_gee   -> pixel classification         -> flood_extent_gee
+                        (raw passes)      (SAR ratio > 1.25)
+GDELT                -> gdelt_news      -> 3-day rolling average        -> news_attention
+                                                                            (peak-day / lag vs. rainfall)
+News + Wikipedia     -> impact_reports -> typed + is_estimate flag     -> impact_summary
+(manual)                (raw quote)       (parsed from the actual wording)
+```
+
+Every gold table above is produced by a real, re-runnable script (`gold_rainfall.py`,
+`ingest_satellite_gee.py`, `gold_gdelt.py`, `extract_impact.py`) -- not
+interactive one-off code. All four converge into `export_site_data.py`,
+which writes `site/data/*.json`, which the static site fetches at runtime:
+
+```
                          site/data/*.json (export)
                                     |
                                     v

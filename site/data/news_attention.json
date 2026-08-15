@@ -1,0 +1,16 @@
+[
+  {
+    "region": "assam",
+    "peak_date": "2026-08-03",
+    "peak_article_count": 87,
+    "rainfall_peak_date": "2026-07-20",
+    "lag_days": 14
+  },
+  {
+    "region": "gujarat",
+    "peak_date": "2026-07-23",
+    "peak_article_count": 41,
+    "rainfall_peak_date": "2026-07-24",
+    "lag_days": -1
+  }
+]

@@ -29,6 +29,11 @@ REGIONS = {
         # cloudburst trigger 2026-07-19 (Mon district, Nagaland), peak
         # devastation 2026-07-21/22, still ongoing/worsening as of early Aug
         "event_window_2026": ("2026-07-15", "2026-08-10"),
+        # rainfall pipeline's own computed peak day (+226.6% departure) --
+        # used as the reference date for satellite before/after windows and
+        # for the GDELT coverage-lag calc, so both stay anchored to the same
+        # independently-derived date instead of each hardcoding it separately
+        "rainfall_peak_date_2026": "2026-07-20",
         # approximate cluster around Sivasagar/Charaideo/Jorhat/Golaghat --
         # NOT a precise administrative boundary, just a tighter box than the
         # full state so satellite pixel counts stay computationally sane
@@ -46,6 +51,10 @@ REGIONS = {
         ],
         # Valsad recorded >100cm rain in 24h around 2026-07-24
         "event_window_2026": ("2026-07-20", "2026-07-30"),
+        # rainfall pipeline's own computed peak day (+540.9% departure) --
+        # see the Assam field above for why this lives here instead of being
+        # hardcoded separately in each downstream script
+        "rainfall_peak_date_2026": "2026-07-24",
         # approximate cluster around Valsad/Navsari/Surat -- same caveat as Assam's
         "flood_extent_bbox": (72.6, 20.3, 73.3, 21.3),
     },
@@ -66,3 +75,11 @@ def get_flood_extent_bbox(region: str) -> tuple:
     """Tighter bbox around the worst-hit district cluster, for satellite
     flood-extent analysis where full-state pixel counts would be wasteful."""
     return REGIONS[region]["flood_extent_bbox"]
+
+
+def get_rainfall_peak_date(region: str) -> str:
+    """ISO date of the rainfall pipeline's own computed peak day -- the
+    single source of truth other pipeline stages (satellite before/after
+    windows, GDELT coverage-lag) anchor to, instead of each re-deriving or
+    re-hardcoding it."""
+    return REGIONS[region]["rainfall_peak_date_2026"]

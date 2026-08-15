@@ -475,6 +475,90 @@ Read this first at the start of a new session. See README.md for architecture/da
 - No Python changes this entry; `pytest tests/ -q` unaffected, still 12
   passed. Committed and pushed — GitHub Actions redeployed automatically.
 
+## 2026-08-15 — Session entry (real bronze/silver/gold for all 4 sources)
+
+- User pushed back on the architecture diagram: it accurately showed
+  GDELT/satellite/impact skipping bronze and/or gold, but per medallion
+  architecture convention wanted every source to genuinely flow through
+  all three layers. Asked first whether that meant a full pipeline
+  refactor or just a diagram redraw, since forcing 3 literal layers for
+  sources with nothing to transform (GDELT is already 1 row/day,
+  satellite computes server-side in GEE, impact is hand-cited facts)
+  means inventing real intermediate steps, not just relabeling — user
+  chose the full refactor (portfolio/interview-prep project, textbook-
+  correct architecture matters more here than minimal-code purism).
+- **Closed a real pre-existing gap along the way**: discovered
+  `silver_rainfall.py`/`silver_historical_trend.py` were always pure
+  transform functions with no committed script that actually called them
+  and wrote gold — the two rainfall gold tables on disk had been produced
+  by interactive one-off code in an earlier session and were not
+  reproducible from a clean checkout. New `gold_rainfall.py` fixes this:
+  persists a real silver daily-mean layer, then gold. **Caught a real bug
+  while rebuilding it**: initially read the 26-year (2000-2025) archive
+  for both the trend AND the anomaly-vs-normal calc, which silently
+  shifted the published "+226.6%/+540.9%" figures (recomputed as
+  +267%/+579.5% against the wrong baseline) — the anomaly calc must stay
+  pinned to the 2016-2025 normal that's been quoted throughout the site
+  since the first session, the 26-year archive is only for the separate
+  trend table. Fixed and reverified against the exact known-good numbers.
+- Added `silver_gdelt.py` + `gold_gdelt.py`: real 3-day rolling-average
+  smoothing (silver) and a genuinely new `gold.news_attention` table
+  (silver) formalizing "did coverage track the event" as an actual
+  peak-day/lag-vs-rainfall-peak number instead of only prose on the site.
+  Reproduced the already-documented finding exactly (Gujarat: peaked
+  Jul 23, -1 day lag / anticipatory) plus a new one for Assam (peaked
+  Aug 3, 87 articles, +14 day lag — coverage tracked the death toll, not
+  the initial cloudburst).
+- Restructured `ingest_satellite_gee.py` into three real persisted steps:
+  bronze (`satellite_gee/passes.parquet`, one row per actual Sentinel-1
+  pass used — 32 rows across both regions), silver (pixel-classification
+  result before km2 conversion), gold (same schema as before). Re-ran
+  live against real Earth Engine credentials (cached from the earlier
+  session, no new browser auth needed) and got exact matches to the
+  previously-verified numbers (Assam 2,389 km², Gujarat 83 km²). Also
+  fixed a `datetime.utcfromtimestamp` deprecation warning surfaced along
+  the way.
+- Restructured `extract_impact.py` into bronze (raw quote text alongside
+  the analyst's numeric read — documented explicitly that there's no
+  fake auto-parser turning "over 3 lakh" into 300000, a human did that in
+  one step, same as any transcription), silver (`is_estimate` flag, a
+  real function checking the actual wording for "over"/"more than"/"+"),
+  gold (dedup validation, same as before). Split the pure transform
+  functions (`compute_silver`/`compute_gold`) from the I/O-performing
+  ones (`build_silver`/`build_gold`) after almost letting a new test call
+  the I/O version and silently clobber real pipeline output with toy
+  fixture data — caught before it happened, not after.
+- Added `geo_reference.get_rainfall_peak_date()` — the peak dates were
+  previously hardcoded separately in `ingest_satellite_gee.py`'s
+  `__main__` block; now both that and the new GDELT lag calc read from
+  one place.
+- 8 new tests (GDELT silver/gold pure functions, impact estimate-flag
+  parsing + silver/gold pure transforms) — `pytest tests/ -q` now 23
+  passed (was 12 at the start of this session, then 15, now 23).
+- Updated `export_site_data.py`: `impact.json` now carries `is_estimate`
+  per row; new `news_attention.json` export.
+- Site changes: impact section's citation note now names the real
+  bronze→silver→gold path (the existing "+" suffix on estimate figures
+  already visually matched the new `is_estimate` flag — nice
+  confirmation the editorial convention and the formal flag agree). The
+  GDELT/attention section's peak-day and lag numbers are now genuinely
+  fetched from `news_attention.json` at runtime (added `id` spans +
+  `applyNewsAttention()`) instead of being hand-typed prose, matching the
+  section's own new claim that they're a real gold-layer table.
+- **Redrew the architecture diagram from scratch**: four consistent
+  lanes (source → bronze → silver → gold), all four converging into
+  `export_site_data.py` → site. Much simpler than the old diagram's
+  special-cased bypass paths, because the underlying pipeline is now
+  actually consistent — the diagram got easier to draw *because* the
+  architecture is more correct, not despite it. Removed the now-dead
+  `.flow.bypass`/`.flow-label` CSS rules that had no remaining users.
+  Verified in a real headless browser, light and dark mode, same as every
+  other diagram/chart change this project has made.
+- Live GEE re-run + Playwright browser checks both required real waits
+  (satellite ingestion ~2min, browser installs) — ran the satellite
+  re-ingestion in the background and worked on the impact-layer restructure
+  while it completed, rather than blocking on it.
+
 ## Gotchas hit and fixed
 
 - The rainfall download pages (`Rainfall_25_NetCDF.html`, `Rain_Download.html`)
