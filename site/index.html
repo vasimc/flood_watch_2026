@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Flood Watch 2026</title>
+<link rel="stylesheet" href="vendor/maplibre-gl.css">
+<script src="vendor/pmtiles.js"></script>
+<script src="vendor/maplibre-gl.js"></script>
 <style>
   @font-face {
     font-family: "system-serif";
@@ -639,6 +642,52 @@
     border: 1px solid var(--border);
   }
 
+  .map-card-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 2px;
+  }
+
+  .map-toggle {
+    display: inline-flex;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .map-toggle-btn {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.02em;
+    padding: 4px 11px;
+    background: var(--surface);
+    color: var(--ink-3);
+    border: none;
+    cursor: pointer;
+  }
+
+  .map-toggle-btn + .map-toggle-btn { border-left: 1px solid var(--border); }
+  .map-toggle-btn.active { background: var(--accent-tint); color: var(--accent); }
+
+  .maplibre-map {
+    width: 100%;
+    height: 340px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--surface-2);
+  }
+
+  .maplibre-map .maplibregl-ctrl-attrib { font-size: 10px; }
+
+  .map-load-note {
+    font-size: 0.72rem;
+    color: var(--ink-3);
+    margin-top: 8px;
+  }
+
   /* ---------- Architecture diagram ---------- */
 
   .arch-figure {
@@ -955,11 +1004,18 @@
     </p>
     <div class="trend-grid">
       <div class="trend-card">
-        <h4>Assam</h4>
+        <div class="map-card-head">
+          <h4>Assam</h4>
+          <div class="map-toggle" data-region="assam">
+            <button class="map-toggle-btn active" data-view="svg">Simple</button>
+            <button class="map-toggle-btn" data-view="maplibre">Real map</button>
+          </div>
+        </div>
         <div class="chart-wrap" id="map-assam-wrap">
           <svg class="district-map" id="map-assam" viewBox="0 0 380 340" preserveAspectRatio="xMidYMid meet"></svg>
           <div class="tooltip" id="tooltip-map-assam"></div>
         </div>
+        <div class="maplibre-map" id="maplibre-assam" style="display: none;"></div>
         <div class="map-legend">
           <span>0 km&sup2;</span>
           <div class="map-legend-bar"></div>
@@ -967,11 +1023,18 @@
         </div>
       </div>
       <div class="trend-card">
-        <h4>Gujarat</h4>
+        <div class="map-card-head">
+          <h4>Gujarat</h4>
+          <div class="map-toggle" data-region="gujarat">
+            <button class="map-toggle-btn active" data-view="svg">Simple</button>
+            <button class="map-toggle-btn" data-view="maplibre">Real map</button>
+          </div>
+        </div>
         <div class="chart-wrap" id="map-gujarat-wrap">
           <svg class="district-map" id="map-gujarat" viewBox="0 0 380 340" preserveAspectRatio="xMidYMid meet"></svg>
           <div class="tooltip" id="tooltip-map-gujarat"></div>
         </div>
+        <div class="maplibre-map" id="maplibre-gujarat" style="display: none;"></div>
         <div class="map-legend">
           <span>0 km&sup2;</span>
           <div class="map-legend-bar"></div>
@@ -979,6 +1042,12 @@
         </div>
       </div>
     </div>
+    <p class="map-load-note">
+      "Real map" loads a self-hosted OpenStreetMap-derived basemap (cropped
+      to each region, no external map server) &mdash; roads, place names,
+      and terrain for real geographic orientation, on top of the same
+      flood-extent data as the simple view.
+    </p>
 
     <div class="caveat">
       <b>Honest discrepancy, not smoothed over:</b> summing the 4 Assam
@@ -1963,6 +2032,187 @@
     });
   }
 
+  // ---------- Real basemap (MapLibre + self-hosted PMTiles) ----------
+  // Tile *data* is fully self-hosted (site/assets/{region}.pmtiles, cropped
+  // from a Protomaps daily OSM build, no external tile server at runtime).
+  // Font glyphs for map labels are the one external dependency this needs --
+  // Protomaps' public glyph CDN, a low-risk static-asset dependency, not a
+  // tile server that could rate-limit or change terms.
+  const GLYPHS_URL = "https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf";
+  const maplibreState = {}; // region -> { map, loaded }
+
+  function registerPmtilesProtocol() {
+    if (registerPmtilesProtocol._done) return;
+    const protocol = new pmtiles.Protocol();
+    maplibregl.addProtocol("pmtiles", protocol.tile);
+    registerPmtilesProtocol._done = true;
+  }
+
+  function buildMapLibreStyle(region) {
+    const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return {
+      version: 8,
+      glyphs: GLYPHS_URL,
+      sources: {
+        basemap: {
+          type: "vector",
+          url: `pmtiles://assets/${region}.pmtiles`,
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors, ' +
+            '<a href="https://protomaps.com" target="_blank">Protomaps</a>',
+        },
+      },
+      layers: [
+        { id: "background", type: "background", paint: { "background-color": css("--surface-2") } },
+        { id: "earth", type: "fill", source: "basemap", "source-layer": "earth", paint: { "fill-color": css("--surface") } },
+        { id: "water", type: "fill", source: "basemap", "source-layer": "water", paint: { "fill-color": css("--accent"), "fill-opacity": 0.25 } },
+        {
+          id: "roads-minor", type: "line", source: "basemap", "source-layer": "roads",
+          filter: ["!", ["in", ["get", "kind"], ["literal", ["highway", "major_road"]]]],
+          paint: { "line-color": css("--border"), "line-width": 0.6 },
+        },
+        {
+          id: "roads-major", type: "line", source: "basemap", "source-layer": "roads",
+          filter: ["in", ["get", "kind"], ["literal", ["highway", "major_road"]]],
+          paint: { "line-color": css("--ink-3"), "line-width": 1.4 },
+        },
+        {
+          id: "boundaries", type: "line", source: "basemap", "source-layer": "boundaries",
+          paint: { "line-color": css("--border"), "line-width": 1, "line-dasharray": [2, 2] },
+        },
+        {
+          id: "places", type: "symbol", source: "basemap", "source-layer": "places",
+          filter: ["in", ["get", "kind"], ["literal", ["locality", "city", "town", "village"]]],
+          layout: { "text-field": ["get", "name"], "text-font": ["Noto Sans Regular"], "text-size": 11, "text-max-width": 8 },
+          paint: { "text-color": css("--ink"), "text-halo-color": css("--surface"), "text-halo-width": 1.4 },
+        },
+      ],
+    };
+  }
+
+  function districtsToGeoJSON(region, boundaries, extentByDistrict) {
+    const byDistrict = Object.fromEntries(extentByDistrict.filter(d => d.region === region).map(d => [d.district, d]));
+    const maxKm2 = Math.max(...Object.values(byDistrict).map(d => d.flooded_area_km2), 0.01);
+    const style = getComputedStyle(document.documentElement);
+    const lowColor = style.getPropertyValue("--surface-2").trim();
+    const highColor = style.getPropertyValue("--alert").trim();
+
+    const features = boundaries.features
+      .filter(f => f.properties.region === region)
+      .map(f => {
+        const rec = byDistrict[f.properties.district];
+        const t = rec ? Math.min(rec.flooded_area_km2 / maxKm2, 1) : 0;
+        return {
+          ...f,
+          properties: {
+            ...f.properties,
+            fillColor: interpolateColor(lowColor, highColor, t),
+            floodedKm2: rec ? rec.flooded_area_km2 : null,
+            widened: rec ? rec.after_window_widened : false,
+          },
+        };
+      });
+    return { type: "FeatureCollection", features };
+  }
+
+  function initMapLibreMap(region, boundaries, extentByDistrict) {
+    if (maplibreState[region]) return;
+    registerPmtilesProtocol();
+
+    const container = document.getElementById(`maplibre-${region}`);
+    const map = new maplibregl.Map({
+      container,
+      style: buildMapLibreStyle(region),
+      attributionControl: false,
+    });
+    map.addControl(new maplibregl.AttributionControl({ compact: true }));
+    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+    map.scrollZoom.disable(); // page-scroll takes priority over map zoom on a long-form article
+
+    const districtGeoJSON = districtsToGeoJSON(region, boundaries, extentByDistrict);
+    const districtFeatures = boundaries.features.filter(f => f.properties.region === region);
+
+    map.on("load", () => {
+      map.addSource("districts", { type: "geojson", data: districtGeoJSON });
+      map.addLayer({
+        id: "districts-fill", type: "fill", source: "districts",
+        paint: { "fill-color": ["get", "fillColor"], "fill-opacity": 0.75 },
+      });
+      map.addLayer({
+        id: "districts-outline", type: "line", source: "districts",
+        paint: { "line-color": getComputedStyle(document.documentElement).getPropertyValue("--surface").trim(), "line-width": 1.5 },
+      });
+
+      // district names, independent of whatever OSM place labels happen to
+      // fall inside each shape -- same centroid math as the SVG map
+      const labelPoints = {
+        type: "FeatureCollection",
+        features: districtFeatures.map(f => {
+          const c = geometryCentroid(f.geometry);
+          return c && { type: "Feature", properties: { district: f.properties.district }, geometry: { type: "Point", coordinates: c } };
+        }).filter(Boolean),
+      };
+      map.addSource("district-labels", { type: "geojson", data: labelPoints });
+      map.addLayer({
+        id: "district-labels", type: "symbol", source: "district-labels",
+        layout: { "text-field": ["get", "district"], "text-font": ["Noto Sans Regular"], "text-size": 12 },
+        paint: {
+          "text-color": getComputedStyle(document.documentElement).getPropertyValue("--ink").trim(),
+          "text-halo-color": getComputedStyle(document.documentElement).getPropertyValue("--surface").trim(),
+          "text-halo-width": 1.8,
+        },
+      });
+
+      const bounds = new maplibregl.LngLatBounds();
+      districtFeatures.forEach(f => eachRingCoord(f.geometry, (lon, lat) => bounds.extend([lon, lat])));
+      map.fitBounds(bounds, { padding: 30, duration: 0 });
+
+      const tooltip = document.getElementById(`tooltip-map-${region}`);
+      map.on("mousemove", "districts-fill", e => {
+        const f = e.features[0];
+        const wrapRect = container.getBoundingClientRect();
+        tooltip.style.left = (e.originalEvent.clientX - wrapRect.left) + "px";
+        tooltip.style.top = (e.originalEvent.clientY - wrapRect.top) + "px";
+        tooltip.innerHTML = `<div class="tt-date">${f.properties.district}</div>` +
+          (f.properties.floodedKm2 != null
+            ? `${f.properties.floodedKm2.toFixed(1)} km&sup2; flooded` + (f.properties.widened ? "<br/><span style='color:var(--amber)'>widened window</span>" : "")
+            : "no data");
+        tooltip.classList.add("visible");
+        map.getCanvas().style.cursor = "pointer";
+      });
+      map.on("mouseleave", "districts-fill", () => {
+        tooltip.classList.remove("visible");
+        map.getCanvas().style.cursor = "";
+      });
+    });
+
+    maplibreState[region] = { map, loaded: true };
+  }
+
+  function wireMapToggles(boundaries, extentByDistrict) {
+    document.querySelectorAll(".map-toggle").forEach(toggle => {
+      const region = toggle.dataset.region;
+      const svgWrap = document.getElementById(`map-${region}-wrap`);
+      const legend = svgWrap.closest(".trend-card").querySelector(".map-legend");
+      const maplibreDiv = document.getElementById(`maplibre-${region}`);
+
+      toggle.querySelectorAll(".map-toggle-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          toggle.querySelectorAll(".map-toggle-btn").forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          const showMap = btn.dataset.view === "maplibre";
+          svgWrap.style.display = showMap ? "none" : "";
+          legend.style.display = showMap ? "none" : "";
+          maplibreDiv.style.display = showMap ? "" : "none";
+          if (showMap) {
+            initMapLibreMap(region, boundaries, extentByDistrict);
+            if (maplibreState[region]) requestAnimationFrame(() => maplibreState[region].map.resize());
+          }
+        });
+      });
+    });
+  }
+
   async function loadSiteData() {
     const [rainfall, trend, news, newsAttention, floodExtent, districtBoundaries, stateBoundaries, floodExtentByDistrict] = await Promise.all(
       [
@@ -1996,6 +2246,7 @@
 
     buildDistrictMap("assam", districtBoundaries, stateBoundaries, floodExtentByDistrict);
     buildDistrictMap("gujarat", districtBoundaries, stateBoundaries, floodExtentByDistrict);
+    wireMapToggles(districtBoundaries, floodExtentByDistrict);
   }
 
   loadSiteData().catch(err => {

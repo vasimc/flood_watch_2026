@@ -27,6 +27,7 @@ presents it as accessible infographics rather than another dashboard.
 | [IMD Pune gridded rainfall — realtime daily](https://www.imdpune.gov.in/cmpg/Realtimedata/Rainfall/Rain_Download.html) | 0.25°×0.25° single-day rainfall, raw binary grid, **includes current 2026 dates** | free, no registration (verified POST endpoint) | A — automated ingestion, actual event-date rainfall |
 | [GDELT](https://www.gdeltproject.org/) | daily news-article-volume timeline per query (DOC 2.0 API) | free, no auth; strict rate limit in practice (~30s between requests) | A — automated ingestion, attribution required by GDELT's own terms |
 | [geoBoundaries](https://www.geoboundaries.org/) (India ADM1+ADM2, via GEE) | real district boundaries for 7 worst-hit districts + full state outlines (Assam, Gujarat) for map context | free via GEE catalog (`WM/geoLab/geoBoundaries/600/ADM1`, `.../ADM2`), no download needed | reference/dimension data — not a fact source, ODbL 1.0 (see licensing below) |
+| [Protomaps](https://protomaps.com/) basemap (OSM-derived) | real roads, place names, water, admin boundaries for the "Real map" toggle on the district-extent view | self-hosted static `.pmtiles` extracts in `site/assets/` (cropped from a Protomaps daily build via `pmtiles extract`), no tile server at runtime | reference/dimension data, ODbL 1.0 (OpenStreetMap contributors, via Protomaps) |
 | [ReliefWeb](https://reliefweb.int/) / ASDMA / Gujarat SEOC sitreps | deaths, relief camps, crop damage, embankment breach reports | manual PDF/HTML | B — structured extraction |
 
 **Honest data-pipeline note:** rainfall, GDELT, and satellite flood-extent are
@@ -124,6 +125,8 @@ flood_watch_2026/
     index.html                the durable site (GitHub Pages) -- reads site/data/*.json at runtime
     index_prototype.html       earlier draft, published as a Claude Artifact, kept for reference
     data/*.json                exported by export_site_data.py, committed (not gitignored)
+    vendor/                    self-hosted MapLibre GL JS + PMTiles JS (BSD-3), no CDN dependency
+    assets/*.pmtiles           self-hosted OSM basemap extracts (ODbL 1.0), no tile server dependency
 ```
 
 Run `python -m flood_watch.export_site_data` (with `src` on `PYTHONPATH`, same as the
@@ -188,7 +191,9 @@ statistics with attribution), with one adjustment already made.
 | NASA LANCE / LAADS (MCDWD) | no reuse restrictions — NASA data is effectively public domain | attribution requested, not required: *"We acknowledge the use of data and/or imagery from NASA's Land, Atmosphere Near real-time Capability for Earth observations (LANCE)..."* |
 | IMD Pune gridded rainfall | safe for derived statistics; site-wide disclaimer restricts reproducing raw content without permission | cite Pai et al. (2014), MAUSAM 65(1), pp1–18; don't publicly host/link the raw NetCDF/binary files (they stay in gitignored `data/`) |
 | GDELT | fully open — "unlimited and unrestricted use for any academic, commercial, or governmental use," redistribution of derived data explicitly permitted | attribution **is mandatory**: cite the GDELT Project + link to gdeltproject.org wherever this data or anything derived from it is used |
-| geoBoundaries (India ADM2 district boundaries) | ODbL 1.0 — checked the actual license text (not the marketing page's "CC BY 4.0" headline claim), which is stricter for this specific dataset | derived *statistics* (flooded_area_km2 per district) only need simple attribution (ODbL §4.3); republishing the boundary *geometries themselves*, as this site does for the map, counts as extracting a substantial part of the source and requires the ODbL notice alongside that specific data (§4.2/4.4) — both included on the site and in `ingest_district_boundaries.py` |
+| geoBoundaries (India ADM1+ADM2 district/state boundaries) | ODbL 1.0 — checked the actual license text (not the marketing page's "CC BY 4.0" headline claim), which is stricter for this specific dataset | derived *statistics* (flooded_area_km2 per district) only need simple attribution (ODbL §4.3); republishing the boundary *geometries themselves*, as this site does for the map, counts as extracting a substantial part of the source and requires the ODbL notice alongside that specific data (§4.2/4.4) — both included on the site and in `ingest_district_boundaries.py` |
+| Protomaps basemap tiles (OpenStreetMap-derived, `site/assets/*.pmtiles`) | ODbL 1.0 — same license family and same "republishing the actual geodata triggers the stricter clause" reasoning as geoBoundaries above; Protomaps' own tooling/build pipeline is BSD-3, only the underlying OSM map *data* is ODbL | attribution required and shown on the map itself: "© OpenStreetMap contributors, Protomaps" |
+| MapLibre GL JS + PMTiles JS (self-hosted in `site/vendor/`) | BSD-3-Clause, no restrictions | license file not required to be bundled for this use, but see the projects' own LICENSE files if redistributing the libraries themselves |
 | Wikipedia | facts are freely reusable even without attribution; our citations link back anyway | none beyond the existing link |
 | News outlets (The Week, Down To Earth, ThePrint, ANI News, Nativeplanet) | citing bare facts (death tolls, figures) with an attributed link is standard, low-risk practice in both US and Indian copyright law (facts aren't copyrightable; short attributed use for reporting/commentary falls within fair use / India's Section 52(1)(a) fair dealing) | attribute + link (already the site's practice) |
 

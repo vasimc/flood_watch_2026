@@ -694,6 +694,93 @@ Read this first at the start of a new session. See README.md for architecture/da
   Verified in a real browser, both themes, hover interaction still works
   correctly with the new background layer present.
 
+## 2026-08-15 — Session entry (real MapLibre basemap toggle)
+
+- User asked whether the Google Maps Embed API could improve the district
+  map. Checked rather than assumed: the Embed API is place/directions/
+  street-view only, no support for custom-colored polygon overlays at all
+  -- that needs the full Maps JavaScript API, which requires a billing-
+  enabled GCP project even on the free tier. Explained the tradeoff
+  (self-contained SVG vs. API-key-and-billing basemap) rather than either
+  building it or dismissing the question.
+- User then asked to research free web-map alternatives properly.
+  Delegated to a research agent with instructions to verify *current*
+  terms, not stale training-data assumptions, since tile-provider free
+  tiers change (the Stamen-\>Stadia migration was the flagged example).
+  Real findings that would have been wrong from memory: **CARTO's free
+  basemaps are now gated to enterprise/nonprofit-grant only** (used to be
+  open); OSM's own tile server explicitly discourages being relied on for
+  a production site (no SLA, "access may be withdrawn at any point").
+  Two options held up: OpenFreeMap (free, no key, single-maintainer
+  infra) and **Protomaps PMTiles, self-hosted** (a static file served by
+  GitHub Pages itself, zero external tile-server dependency at runtime --
+  the best fit for this project's self-containment values). Flagged a
+  real, currently-open bug: Firefox mishandles PMTiles range-request
+  caching specifically on GitHub Pages (protomaps/PMTiles #582/#272,
+  confirmed reproducing by the maintainer as of mid-2025).
+- User chose the recommendation: MapLibre GL JS + self-hosted Protomaps
+  PMTiles, added as an optional "Real map" toggle alongside the existing
+  SVG choropleth (not a replacement) per the research's own honest
+  pushback about added complexity for two small district clusters.
+- **Built it for real, verifying each piece rather than assuming it'd
+  work:**
+  - Downloaded the `go-pmtiles` CLI (prebuilt Windows binary from the
+    real GitHub release, since neither the Python nor npm `pmtiles`
+    packages include the `extract` command). Found today's live daily
+    build at `build.protomaps.com/20260815.pmtiles` by testing dates
+    directly against `pmtiles show`, not guessing a URL pattern.
+  - Dry-ran extraction at a few zoom levels before committing to a real
+    download to pick a size/detail tradeoff (maxzoom=13 -> 14MB Assam +
+    9.7MB Gujarat, vs. 25MB+9.7MB at maxzoom=14) -- reasonable for a git
+    repo, real roads and place names retained.
+  - Self-hosted MapLibre GL JS + the PMTiles JS decoder in `site/vendor/`
+    (BSD-3, verified license headers in the actual downloaded files, not
+    just the package page) -- no CDN dependency, consistent with how the
+    rest of this project treats external dependencies.
+  - Built a **custom minimal map style** from the real Protomaps vector
+    schema (checked actual layer names/fields via `pmtiles show
+    --metadata` first) using the site's own CSS design tokens read live
+    via `getComputedStyle`, rather than importing Protomaps' default
+    busy OSM-styled theme -- keeps the real map visually consistent with
+    the rest of the site (muted palette, same typography) instead of a
+    jarring different-app-pasted-in look, and it means the map
+    automatically matches light/dark theme the same way every other
+    chart on the site does.
+  - District polygons + labels render as a GeoJSON overlay on top,
+    reusing the exact same `interpolateColor`/`geometryCentroid` logic
+    already written for the SVG map -- same colors, same district names,
+    genuinely the same data, different basemap underneath.
+- **Two real debugging dead ends, resolved by checking rather than
+  guessing:**
+  1. First test threw `"Server returned no content-length header..."` --
+     turned out to be Python's built-in `http.server`, which silently
+     ignores Range headers and returns the whole file with `200 OK`
+     instead of `206 Partial Content` (confirmed via a raw `curl -H
+     "Range: ..."` request, not assumed). Not a bug in the map code --
+     switched local testing to `http-server` (proper Range/206 support,
+     confirmed the same way) before re-testing.
+  2. Basemap looked completely blank in a full-page screenshot even after
+     confirming (via `map.querySourceFeatures`) that tiles were loading
+     and 58 place features + 8 road features were present. Turned out to
+     be a false alarm from screenshot compression at small scale, not a
+     real rendering bug -- a cropped, high-DPI screenshot of just the map
+     canvas showed the Brahmaputra river, real town names, roads, and
+     state borders rendering correctly all along.
+  3. Fixed a genuine bug caught along the way: `pmtiles://` source URLs
+     for the two regions must be relative paths (`assets/{region}.pmtiles`),
+     not absolute -- verified this resolves correctly under both a local
+     dev server and GitHub Pages' actual subpath structure before
+     committing to it.
+- Verified locally in both Chromium and Firefox (including a pan/zoom
+  interaction to trigger fresh range requests, not just the initial
+  load) -- zero errors either way. **Not yet verified against the live
+  GitHub Pages URL in Firefox specifically**, which is the one
+  environment the known upstream bug was reported in -- that's the next
+  step before calling this fully shipped; a same-origin non-Pages static
+  host for just the `.pmtiles` files is the documented fallback if it
+  reproduces there.
+- `pytest tests/ -q` unaffected (this entry is site-only), still 27 passed.
+
 ## Gotchas hit and fixed
 
 - The rainfall download pages (`Rainfall_25_NetCDF.html`, `Rain_Download.html`)
