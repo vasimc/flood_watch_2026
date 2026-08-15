@@ -103,8 +103,9 @@ which writes `site/data/*.json`, which the static site fetches at runtime:
                       static site (GitHub Pages)
 ```
 
-Warehouse: a single local DuckDB file (`data/flood_watch.duckdb`) reading Parquet
-directly via `read_parquet()` — no double-storage, inspectable with plain SQL.
+Storage: plain Parquet files under `data/{bronze,silver,gold}/`, read and
+written directly via pandas' `read_parquet()`/`to_parquet()` — no warehouse
+or database layer in front of it.
 
 ## Project layout
 

@@ -1,6 +1,5 @@
 requests
 python-dotenv
-duckdb
 pandas
 pyarrow
 rasterio

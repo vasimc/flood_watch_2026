@@ -559,6 +559,25 @@ Read this first at the start of a new session. See README.md for architecture/da
   re-ingestion in the background and worked on the impact-layer restructure
   while it completed, rather than blocking on it.
 
+## 2026-08-15 — Session entry (removed a false DuckDB claim)
+
+- User asked, reasonably, whether DuckDB was actually used given the site's
+  "How this was built" section listed it. Checked rather than assumed:
+  `warehouse.py` had a `get_connection()` DuckDB helper and a `DB_PATH`,
+  but grepped the whole codebase and found **nothing ever called it** --
+  no `.duckdb` file exists on disk, and all 36 real read/write calls across
+  the pipeline go through plain `pandas.read_parquet`/`to_parquet`. DuckDB
+  was scaffolded early on and never actually wired in; the site/README
+  mentions were describing planned infrastructure, not what's running.
+- Fixed by removing the claim (user's choice over the alternative of
+  actually wiring DuckDB in for real): dropped `get_connection()`/`DB_PATH`/
+  the `duckdb` import from `warehouse.py` (genuinely dead code, not just
+  unmentioned), removed `duckdb` from `requirements.txt`, and updated both
+  the site's architecture section-note and README's "Warehouse" paragraph
+  to describe what's actually there -- plain Parquet, pandas I/O, no
+  database layer. `pytest tests/ -q` still 23 passed (nothing imported the
+  removed symbols).
+
 ## Gotchas hit and fixed
 
 - The rainfall download pages (`Rainfall_25_NetCDF.html`, `Rain_Download.html`)
