@@ -17,7 +17,8 @@ Read this first at the start of a new session. See README.md for architecture/da
 - [ ] Website v1 deployed to GitHub Pages (prototype is live as a Claude Artifact, not yet the durable site)
 - [x] Narrative/preparedness section — warning systems, cited 2026-response lessons, NDMA guidance
 - [x] Durable `site/index.html` reading `site/data/*.json` (built + verified in a real browser)
-- [ ] GitHub repo created + pushed (still local only)
+- [x] GitHub repo created + pushed: https://github.com/vasimc/flood_watch_2026
+- [x] Deployed to GitHub Pages: https://vasimc.github.io/flood_watch_2026/
 
 ## 2026-08-14 — Session entry (skeleton + satellite scaffold)
 
@@ -409,6 +410,37 @@ Read this first at the start of a new session. See README.md for architecture/da
   to run (account-tied action, same principle as every other GitHub/Google
   step this session).
 
+## 2026-08-15 — Session entry (GitHub push + GitHub Pages deploy)
+
+- User asked to push to GitHub. `gh auth status` confirmed an existing
+  authenticated session (account `vasimc`, `repo` scope) — used that rather
+  than asking for fresh credentials. Confirmed repo name/visibility with
+  the user first (public, `flood_watch_2026`) since repo creation + push is
+  a visible, hard-to-fully-reverse action.
+- `git init`, renamed default branch `master` → `main` (GitHub's current
+  default), staged files explicitly by path (not `-A`), reviewed the staged
+  list against `git status --ignored` before committing — confirmed `.env`,
+  `.venv/`, `data/`, and `__pycache__/` all correctly excluded, no secrets.
+  33 files, initial commit, pushed to `https://github.com/vasimc/flood_watch_2026`
+  (public).
+- Added `.github/workflows/pages.yml`: deploys `site/` directly as the
+  Pages root on every push touching `site/**`, via the modern
+  `actions/upload-pages-artifact` + `actions/deploy-pages` flow (not the
+  legacy branch/`docs`-folder method) — gives a clean root URL
+  (`https://vasimc.github.io/flood_watch_2026/`) without moving `site/` to
+  `docs/` or nesting the live URL under `/site/`. Enabled Pages via
+  `gh api repos/vasimc/flood_watch_2026/pages` with `build_type=workflow`
+  before the first push so the workflow had something to deploy to.
+- Watched the deploy run to completion (`gh run watch`) rather than
+  assuming success from the push alone — confirmed all steps green.
+- **Verified live, not just "deployed":** curled `index.html` and
+  `data/rainfall.json` on the real `github.io` URL (both 200), then reran
+  the same Playwright browser check from the local-server verification
+  earlier against the live URL — flood-extent tiles show the correct
+  numbers, all three chart types populate, zero console errors, correct
+  UTF-8 rendering (²/em-dashes). Same rigor as the local check, not skipped
+  just because it's "just a deploy."
+
 ## Gotchas hit and fixed
 
 - The rainfall download pages (`Rainfall_25_NetCDF.html`, `Rain_Download.html`)
@@ -439,13 +471,18 @@ python -m pytest tests/ -q                    # pytest.ini sets pythonpath = src
 
 ## Next steps
 
-All of Tier A is run live, every content section is built, and the durable
-`site/index.html` is done and verified in a real browser. One thing left:
+Everything in the original plan is done and live:
+https://vasimc.github.io/flood_watch_2026/ (repo:
+https://github.com/vasimc/flood_watch_2026, public).
 
-1. Create the GitHub repo (private or public, your call) and push — this
-   project isn't on GitHub yet, `git init` hasn't been run either. Once
-   pushed, enable GitHub Pages (Settings → Pages → serve from the `site/`
-   folder, or a `docs/` copy / branch depending on what GitHub's UI offers)
-   so `site/index.html` actually goes live and can fetch `site/data/*.json`
-   over real http(s), not just the local test server this session used.
-2. Commit + push before ending a session, once the repo exists.
+What's left is optional follow-on work, not required to call this
+complete:
+
+1. District-level flood-extent map (still marked pending in the site's own
+   roadmap footer).
+2. Re-run `export_site_data.py` + push whenever upstream data changes
+   (e.g. a later, less-recent-event snapshot of the impact figures) — the
+   GitHub Actions workflow (`.github/workflows/pages.yml`) redeploys
+   automatically on any push that touches `site/**`.
+3. If continuing to track the event, extend rainfall/GDELT windows and
+   re-ingest satellite for a later date range.

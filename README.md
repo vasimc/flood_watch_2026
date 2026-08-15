@@ -1,5 +1,7 @@
 # Assam & Gujarat Floods 2026 — Data Story
 
+**Live site: https://vasimc.github.io/flood_watch_2026/**
+
 A personal, cause-driven data project — separate from my consulting portfolio work
 — built in response to the 2026 Assam and Gujarat floods. Real ingestion of
 satellite flood-extent and historical rainfall data, plus an honestly-labeled
@@ -152,10 +154,11 @@ python -m pytest tests/ -q                    # pytest.ini sets pythonpath = src
 - [x] Impact/causation extraction table (13 cited rows)
 - [x] Historical trend analysis (2000-2025, monsoon rainfall extremity)
 - [x] GDELT attention timeline
-- [x] Website prototype published (Claude Artifact, not yet the durable GitHub Pages site)
+- [x] Website prototype published (Claude Artifact — earlier draft, kept for reference)
 - [x] Narrative/preparedness section (warning systems, cited 2026-response lessons, NDMA guidance)
-- [x] Durable `site/index.html` reading `site/data/*.json` (built, tested locally with a headless browser, not yet deployed)
-- [ ] GitHub repo created + pushed (site/index.html not yet live on GitHub Pages)
+- [x] Durable `site/index.html` reading `site/data/*.json`, verified with a real headless browser both locally and live
+- [x] GitHub repo created + pushed: https://github.com/vasimc/flood_watch_2026
+- [x] Deployed to GitHub Pages: **https://vasimc.github.io/flood_watch_2026/** (auto-redeploys on push via `.github/workflows/pages.yml`)
 
 ## Data licensing & attribution
 
