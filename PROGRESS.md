@@ -441,6 +441,40 @@ Read this first at the start of a new session. See README.md for architecture/da
   UTF-8 rendering (²/em-dashes). Same rigor as the local check, not skipped
   just because it's "just a deploy."
 
+## 2026-08-15 — Session entry (architecture diagram, "How this was built")
+
+- User asked for an architecture diagram on the site. Checked the real
+  pipeline structure against the code before drawing anything (per the
+  usual verify-don't-guess pattern) rather than reusing README's existing
+  ASCII diagram at face value — found it was slightly idealized. The real
+  routes diverge: rainfall lands in bronze then gets transformed twice into
+  two gold tables; Sentinel-1 (GEE) and the manually-extracted impact
+  figures write their gold tables directly, with no bronze layer in
+  between (there's no meaningful "raw" form of a GEE computation result or
+  a hand-read news figure); GDELT never gets a gold table at all — it's
+  read straight from its bronze pull in `export_site_data.py`. This
+  divergence is the one thing actually worth a diagram; a generic
+  bronze→silver→gold box stack would have been inaccurate.
+  - `linear_trend_slope`'s intercept, added in the site-port session, gets
+    no separate `silver` layer either — both rainfall gold tables are
+    landed directly from ad-hoc transform-function calls, another
+    real-not-idealized detail (not drawn separately in the diagram, judged
+    not worth the extra complexity for a page-level figure).
+- Added a new "How this was built" section (`site/index.html` only —
+  `index_prototype.html` stays frozen as the historical draft) with a
+  hand-authored inline SVG diagram following the site's existing chart
+  conventions (reuses `--accent`/`--amber` tokens for the
+  automated-vs-manual distinction, matching the masthead's status-strip
+  dots; reuses the existing arrow-marker/label pattern). Both light and
+  dark theme rendering verified with the same Playwright screenshot
+  workflow used for the rest of the site this session — caught and fixed
+  two real label-collision bugs before calling it done (an "anomaly calc"
+  label overlapping the gold box header, and two edge labels overlapping
+  box titles in narrow column gaps) rather than shipping on a first-pass
+  screenshot.
+- No Python changes this entry; `pytest tests/ -q` unaffected, still 12
+  passed. Committed and pushed — GitHub Actions redeployed automatically.
+
 ## Gotchas hit and fixed
 
 - The rainfall download pages (`Rainfall_25_NetCDF.html`, `Rain_Download.html`)
